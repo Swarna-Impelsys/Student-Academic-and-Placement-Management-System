@@ -1,7 +1,7 @@
 from django.http import request
 
-from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company
-from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer
+from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,PlacementDrive,Job
+from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,PlacementDriveSerializer,JobSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
@@ -20,7 +20,9 @@ from .permissions import (
     AcademicRecordPermission,
     SkillPermission,
     CertificationPermission,
-    CompanyPermission
+    CompanyPermission,
+    PlacementDrivePermission,
+    JobPermission
     )
 
 #login APIView
@@ -837,6 +839,239 @@ class CompanyDetailAPIView(APIView):
         company.delete()
 
         return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+class PlacementDriveListCreateAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, PlacementDrivePermission]
+
+    def get(self, request):
+
+        drives = PlacementDrive.objects.all()
+
+        serializer = PlacementDriveSerializer(
+            drives,
+            many=True
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request):
+
+        serializer = PlacementDriveSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class PlacementDriveDetailAPIView(APIView):
+
+    permission_classes = [IsAuthenticated,PlacementDrivePermission]
+
+    def get(self, request, id):
+
+        drive = get_object_or_404(
+            PlacementDrive,
+            id=id
+        )
+
+        serializer = PlacementDriveSerializer(
+            drive
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def put(self, request, id):
+
+        drive = get_object_or_404(
+            PlacementDrive,
+            id=id
+        )
+
+        serializer = PlacementDriveSerializer(
+            drive,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def patch(self, request, id):
+
+        drive = get_object_or_404(
+            PlacementDrive,
+            id=id
+        )
+
+        serializer = PlacementDriveSerializer(
+            drive,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, id):
+
+        drive = get_object_or_404(
+            PlacementDrive,
+            id=id
+        )
+
+        drive.delete()
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+class JobListCreateAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, JobPermission]
+
+    def get(self, request):
+        jobs = Job.objects.all()
+        serializer = JobSerializer(jobs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = JobSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class JobDetailAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, JobPermission]
+
+    def get_object(self, id):
+        try:
+            return Job.objects.get(id=id)
+        except Job.DoesNotExist:
+            return None
+
+    def get(self, request, id):
+        job = self.get_object(id)
+
+        if job is None:
+            return Response(
+                {"error": "Job not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = JobSerializer(job)
+        return Response(serializer.data)
+
+    def put(self, request, id):
+        job = self.get_object(id)
+
+        if job is None:
+            return Response(
+                {"error": "Job not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = JobSerializer(
+            job,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def patch(self, request, id):
+        job = self.get_object(id)
+
+        if job is None:
+            return Response(
+                {"error": "Job not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = JobSerializer(
+            job,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, id):
+        job = self.get_object(id)
+
+        if job is None:
+            return Response(
+                {"error": "Job not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        job.delete()
+
+        return Response(
+            {"message": "Job deleted successfully"},
             status=status.HTTP_204_NO_CONTENT
         )
 
