@@ -267,3 +267,46 @@ class ApplicationPermission(BasePermission):
             ]
 
         return False
+
+from rest_framework.permissions import BasePermission
+
+
+class InterviewPermission(BasePermission):
+
+    def has_permission(self, request, view):
+
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Admin and Teacher can manage interviews
+        if request.user.groups.filter(
+            name__in=["Admin", "Teacher"]
+        ).exists():
+            return True
+
+        # Student can access their own interviews
+        if request.user.groups.filter(name="Student").exists():
+            return request.method in ["GET"]
+
+        return False
+
+class SelectionPermission(BasePermission):
+
+    def has_permission(self, request, view):
+
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Admin and Teacher can manage selections
+        if request.user.groups.filter(
+            name__in=["Admin", "Teacher"]
+        ).exists():
+            return True
+
+        # Student can only view
+        if request.user.groups.filter(
+            name="Student"
+        ).exists():
+            return request.method == "GET"
+
+        return False

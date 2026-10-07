@@ -1,4 +1,4 @@
-from .models import Application, Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,EligibilityCheck,Job,PlacementDrive
+from .models import Application, Selection, Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,EligibilityCheck,Job,PlacementDrive,Interview
 from rest_framework import serializers
 
 class SubjectSerializer(serializers.ModelSerializer): 
@@ -428,6 +428,89 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
         return data
 
-    
+class InterviewSerializer(serializers.ModelSerializer):
 
-    
+    class Meta:
+        model = Interview
+
+        fields = [
+            "id",
+            "application",
+            "interview_date",
+            "interview_time",
+            "interview_type",
+            "location",
+            "meeting_link",
+            "status",
+            "feedback",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
+
+class SelectionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Selection
+
+        fields = [
+            "id",
+            "application",
+            "status",
+            "offer_date",
+            "joining_date",
+            "package",
+            "remarks",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
+
+    def validate(self, data):
+
+        status_value = data.get(
+            "status",
+            getattr(self.instance, "status", None)
+        )
+
+        package = data.get(
+            "package",
+            getattr(self.instance, "package", None)
+        )
+
+        joining_date = data.get(
+            "joining_date",
+            getattr(self.instance, "joining_date", None)
+        )
+
+        if status_value == "selected":
+
+            if package is None:
+                raise serializers.ValidationError(
+                    "Package is required for selected candidates."
+                )
+
+            if joining_date is None:
+                raise serializers.ValidationError(
+                    "Joining date is required for selected candidates."
+                )
+
+        if status_value == "rejected":
+
+            if package is not None:
+                raise serializers.ValidationError(
+                    "Rejected candidates cannot have a package."
+                )
+
+            if joining_date is not None:
+                raise serializers.ValidationError(
+                    "Rejected candidates cannot have a joining date."
+                )
+
+        return data

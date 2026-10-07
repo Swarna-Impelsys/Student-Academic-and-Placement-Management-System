@@ -1,7 +1,7 @@
 from django.http import request
 
-from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,Job, EligibilityCheck,PlacementDrive, Application
-from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,EligibilityCheckSerializer,JobSerializer,  PlacementDriveSerializer, ApplicationSerializer
+from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,Job, EligibilityCheck,PlacementDrive, Application, Interview, Selection
+from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,EligibilityCheckSerializer,JobSerializer,  PlacementDriveSerializer, ApplicationSerializer,  InterviewSerializer, SelectionSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
@@ -23,7 +23,9 @@ from .permissions import (
     AcademicRecordPermission,
     SkillPermission,
     CertificationPermission,
-    CompanyPermission
+    CompanyPermission,
+    InterviewPermission,
+    SelectionPermission
     )
 
 #login APIView
@@ -1292,6 +1294,314 @@ class ApplicationDetailAPIView(APIView):
         serializer = ApplicationSerializer(application)
 
         return Response(serializer.data)
+
+class InterviewListCreateAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        InterviewPermission
+    ]
+
+    def get(self, request):
+
+        interviews = Interview.objects.all()
+
+        # STUDENT → ONLY THEIR OWN INTERVIEWS
+        if request.user.groups.filter(name="Student").exists():
+
+            try:
+                student = request.user.student
+            except Student.DoesNotExist:
+                return Response(
+                    {
+                        "error": "Student profile not found."
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            interviews = interviews.filter(
+                application__student=student
+            )
+
+        serializer = InterviewSerializer(
+            interviews,
+            many=True
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request):
+
+        serializer = InterviewSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            interview = serializer.save()
+
+            return Response(
+                InterviewSerializer(interview).data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class InterviewDetailAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        InterviewPermission
+    ]
+
+    def get_object(self, id):
+
+        try:
+            return Interview.objects.get(id=id)
+
+        except Interview.DoesNotExist:
+            return None
+
+    def get(self, request, id):
+
+        interview = self.get_object(id)
+
+        if interview is None:
+            return Response(
+                {"error": "Interview not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Student → only their own interview
+        if request.user.groups.filter(name="Student").exists():
+
+            try:
+                student = request.user.student
+            except Student.DoesNotExist:
+                return Response(
+                    {"error": "Student profile not found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            if interview.application.student != student:
+                return Response(
+                    {"error": "You can only view your own interview."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        serializer = InterviewSerializer(interview)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def put(self, request, id):
+
+        interview = self.get_object(id)
+
+        if interview is None:
+            return Response(
+                {"error": "Interview not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = InterviewSerializer(
+            interview,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            interview = serializer.save()
+
+            return Response(
+                InterviewSerializer(interview).data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, id):
+
+        interview = self.get_object(id)
+
+        if interview is None:
+            return Response(
+                {"error": "Interview not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        interview.delete()
+
+        return Response(
+            {"message": "Interview deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+class SelectionListCreateAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        SelectionPermission
+    ]
+
+    def get(self, request):
+
+        selections = Selection.objects.all()
+
+        # STUDENT → ONLY THEIR OWN SELECTIONS
+        if request.user.groups.filter(name="Student").exists():
+
+            try:
+                student = request.user.student
+            except Student.DoesNotExist:
+                return Response(
+                    {
+                        "error": "Student profile not found."
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            selections = selections.filter(
+                application__student=student
+            )
+
+        serializer = SelectionSerializer(
+            selections,
+            many=True
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request):
+
+        serializer = SelectionSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            selection = serializer.save()
+
+            return Response(
+                SelectionSerializer(selection).data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class SelectionDetailAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        SelectionPermission
+    ]
+
+    def get_object(self, id):
+
+        try:
+            return Selection.objects.get(id=id)
+
+        except Selection.DoesNotExist:
+            return None
+
+    def get(self, request, id):
+
+        selection = self.get_object(id)
+
+        if selection is None:
+            return Response(
+                {"error": "Selection not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Student → only their own selection
+        if request.user.groups.filter(name="Student").exists():
+
+            try:
+                student = request.user.student
+            except Student.DoesNotExist:
+                return Response(
+                    {"error": "Student profile not found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            if selection.application.student != student:
+                return Response(
+                    {
+                        "error": "You can only view your own selection."
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        serializer = SelectionSerializer(selection)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def put(self, request, id):
+
+        selection = self.get_object(id)
+
+        if selection is None:
+            return Response(
+                {"error": "Selection not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = SelectionSerializer(
+            selection,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            selection = serializer.save()
+
+            return Response(
+                SelectionSerializer(selection).data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, id):
+
+        selection = self.get_object(id)
+
+        if selection is None:
+            return Response(
+                {"error": "Selection not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        selection.delete()
+
+        return Response(
+            {"message": "Selection deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 

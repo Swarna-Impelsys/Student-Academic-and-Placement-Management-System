@@ -38,7 +38,11 @@ from .views import(
     PlacementDriveListCreateAPIView,
     PlacementDriveDetailAPIView,
     EligibilityCheckAPIView,
-    ApplicationListCreateAPIView
+    ApplicationListCreateAPIView,
+    InterviewListCreateAPIView,
+    InterviewDetailAPIView,
+    SelectionListCreateAPIView,
+    SelectionDetailAPIView
 
 )
 urlpatterns = [
@@ -75,6 +79,11 @@ urlpatterns = [
     path("eligibility/",EligibilityCheckListAPIView.as_view(),name="eligibility-list"),
     path("applications/", ApplicationListCreateAPIView.as_view(), name="application-list-create"),
     path("applications/<int:id>/",ApplicationDetailAPIView.as_view(),name="application-detail"),
+    path("interviews/", InterviewListCreateAPIView.as_view(),name="interview-list-create"),
+    path("interviews/<int:id>/",InterviewDetailAPIView.as_view(),name="interview-detail"),
+    path("selections/",SelectionListCreateAPIView.as_view(),name="selection-list-create"),
+    path("selections/<int:id>/", SelectionDetailAPIView.as_view(),name="selection-detail"),
+
 
 ]
 

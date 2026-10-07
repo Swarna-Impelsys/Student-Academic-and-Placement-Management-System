@@ -336,4 +336,111 @@ class Application(models.Model):
     )
 
     def __str__(self):
-        return f"{self.student.Name} - {self.job.title}"  
+        return f"{self.student.Name} - {self.job.title}" 
+
+class Interview(models.Model):
+
+    INTERVIEW_TYPE_CHOICES = [
+        ("online", "Online"),
+        ("offline", "Offline"),
+    ]
+
+    STATUS_CHOICES = [
+        ("scheduled", "Scheduled"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("rescheduled", "Rescheduled"),
+    ]
+
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name="interviews"
+    )
+
+    interview_date = models.DateField()
+
+    interview_time = models.TimeField()
+
+    interview_type = models.CharField(
+        max_length=20,
+        choices=INTERVIEW_TYPE_CHOICES
+    )
+
+    location = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
+    meeting_link = models.URLField(
+        blank=True,
+        null=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="scheduled"
+    )
+
+    feedback = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.application.student.Name} - {self.application.job.title}" 
+
+class Selection(models.Model):
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("selected", "Selected"),
+        ("rejected", "Rejected"),
+    ]
+
+    application = models.OneToOneField(
+        Application,
+        on_delete=models.CASCADE,
+        related_name="selection"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    offer_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    joining_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    package = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    remarks = models.TextField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.application.student.Name} - {self.status}"
