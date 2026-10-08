@@ -1,7 +1,8 @@
 from django.http import request
-
-from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,Job, EligibilityCheck,PlacementDrive, Application, Interview, Selection
-from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,EligibilityCheckSerializer,JobSerializer,  PlacementDriveSerializer, ApplicationSerializer,  InterviewSerializer, SelectionSerializer
+from django.db.models import Sum, Avg, Count,Q
+from django.utils import timezone
+from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,Job, EligibilityCheck,PlacementDrive, Application, Interview, Selection, Notification
+from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,EligibilityCheckSerializer,JobSerializer,  PlacementDriveSerializer, ApplicationSerializer,  InterviewSerializer, SelectionSerializer,NotificationSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
@@ -15,6 +16,7 @@ from .services import check_student_eligibility
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import (
     ApplicationPermission,
+    DashboardPermission,
     EligibilityPermission,
     StudentManagementPermissions,
     StudentImageDeletePermission,
@@ -25,7 +27,8 @@ from .permissions import (
     CertificationPermission,
     CompanyPermission,
     InterviewPermission,
-    SelectionPermission
+    SelectionPermission,
+    NotificationPermission
     )
 
 #login APIView
@@ -1343,6 +1346,19 @@ class InterviewListCreateAPIView(APIView):
 
             interview = serializer.save()
 
+            # CREATE AUTOMATIC NOTIFICATION
+            Notification.objects.create(
+                user=interview.application.student.user,
+                notification_type="interview",
+                message=(
+                    f"Your interview for "
+                    f"{interview.application.job.title} "
+                    f"has been scheduled on "
+                    f"{interview.interview_date} "
+                    f"at {interview.interview_time}."
+                )
+            )
+
             return Response(
                 InterviewSerializer(interview).data,
                 status=status.HTTP_201_CREATED
@@ -1496,6 +1512,17 @@ class SelectionListCreateAPIView(APIView):
 
             selection = serializer.save()
 
+            # CREATE AUTOMATIC NOTIFICATION
+            Notification.objects.create(
+                user=selection.application.student.user,
+                notification_type="selection",
+                message=(
+                    f"Your selection status for "
+                    f"{selection.application.job.title} "
+                    f"is {selection.get_status_display()}."
+                )
+            )
+
             return Response(
                 SelectionSerializer(selection).data,
                 status=status.HTTP_201_CREATED
@@ -1505,7 +1532,6 @@ class SelectionListCreateAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
-
 class SelectionDetailAPIView(APIView):
 
     permission_classes = [
@@ -1603,5 +1629,196 @@ class SelectionDetailAPIView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+class NotificationListCreateAPIView(APIView):
 
+    permission_classes = [
+        IsAuthenticated,
+        NotificationPermission
+    ]
 
+    def get(self, request):
+
+        notifications = Notification.objects.all()
+
+        # Student can see only their own notifications
+        if request.user.groups.filter(name="Student").exists():
+            notifications = notifications.filter(
+                user=request.user
+            )
+
+        serializer = NotificationSerializer(
+            notifications,
+            many=True
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request):
+
+        serializer = NotificationSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            notification = serializer.save()
+
+            return Response(
+                NotificationSerializer(notification).data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class NotificationMarkReadAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        NotificationPermission
+    ]
+
+    def patch(self, request, id):
+
+        try:
+            notification = Notification.objects.get(id=id)
+
+        except Notification.DoesNotExist:
+            return Response(
+                {"error": "Notification not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Student can only mark their own notification
+        if request.user.groups.filter(name="Student").exists():
+
+            if notification.user != request.user:
+                return Response(
+                    {
+                        "error": "You can only mark your own notification as read."
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        notification.is_read = True
+        notification.save()
+
+        serializer = NotificationSerializer(notification)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+class DashboardAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,  DashboardPermission
+    ]
+
+    def get(self, request):
+        total_students = Student.objects.count()
+        total_companies = Company.objects.count()
+        total_active_companies = Company.objects.filter(
+            is_active=True
+        ).count()
+        total_drives = PlacementDrive.objects.count()
+        total_jobs = Job.objects.count()
+        total_active_jobs = Job.objects.filter(
+            is_active=True
+            ).count()
+        total_applications = Application.objects.count()
+        total_pending_applications = Application.objects.filter(
+            status="pending"
+            ).count()
+        total_rejected_applications = Application.objects.filter(
+            status="rejected"
+            ).count()
+        total_interviews = Interview.objects.count()
+        total_selected_students = Selection.objects.filter(
+             status="selected"
+             ).count()
+        if total_applications > 0:
+            placement_percentage = (
+                 total_selected_students / total_applications
+                 ) * 100
+        else:
+            placement_percentage = 0
+        total_vacancies = Job.objects.aggregate(
+            total=Sum("vacancies")
+            )["total"]
+        average_salary = Job.objects.aggregate(
+            average=Avg("salary")
+            )["average"]
+        recent_applications = Application.objects.order_by(
+            "-applied_at"
+            )[:5]
+        recent_applications_serializer = ApplicationSerializer(
+            recent_applications,
+            many=True
+            )
+        today = timezone.now().date()
+        upcoming_interviews = Interview.objects.filter(
+            interview_date__gte=today
+            ).order_by(
+                "interview_date",
+                "interview_time"
+                )[:5]
+        upcoming_interviews_serializer = InterviewSerializer(
+            upcoming_interviews,
+            many=True
+            )
+        course_statistics = Course.objects.annotate(
+            student_count=Count("student")
+            )
+        course_statistics_data = []
+        for course in course_statistics:
+            course_statistics_data.append({
+                "course": course.name,
+                "student_count": course.student_count
+                })
+        company_statistics = Company.objects.annotate(
+    selected_count=Count(
+        "placement_drives__jobs__applications__selection",
+        filter=Q(
+            placement_drives__jobs__applications__selection__status="selected"
+        )
+    )
+)
+        company_statistics_data = []
+        for company in company_statistics:
+            company_statistics_data.append({
+                "company": company.name,
+                "selected_count": company.selected_count
+                })
+        return Response(
+        {
+            "total_students": total_students,
+            "total_companies": total_companies,
+            "total_active_companies": total_active_companies,
+            "total_placement_drives": total_drives,
+            "total_jobs": total_jobs,
+            "total_active_jobs": total_active_jobs,
+            "total_applications": total_applications,
+            "total_pending_applications": total_pending_applications,
+            "total_rejected_applications": total_rejected_applications,
+            "total_interviews": total_interviews,
+            "total_selected_students": total_selected_students,
+            "placement_percentage": round(
+                placement_percentage,
+                2
+                ),
+            "total_vacancies": total_vacancies or 0,
+            "average_salary": average_salary or 0,
+            "recent_applications": recent_applications_serializer.data,
+            "upcoming_interviews": upcoming_interviews_serializer.data,
+            "course_statistics": course_statistics_data,
+            "company_statistics": company_statistics_data,
+        },
+        status=status.HTTP_200_OK
+    )

@@ -310,3 +310,36 @@ class SelectionPermission(BasePermission):
             return request.method == "GET"
 
         return False
+
+class NotificationPermission(BasePermission):
+
+    def has_permission(self, request, view):
+
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Admin and Teacher
+        if request.user.groups.filter(
+            name__in=["Admin", "Teacher"]
+        ).exists():
+            return True
+
+        # Student can only GET
+        if request.user.groups.filter(name="Student").exists():
+            return request.method in ["GET", "PATCH"]
+
+        return False
+
+class DashboardPermission(BasePermission):
+
+    def has_permission(self, request, view):
+
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if request.user.groups.filter(
+            name__in=["Admin", "Teacher"]
+        ).exists():
+            return True
+
+        return False

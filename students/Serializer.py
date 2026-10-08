@@ -1,4 +1,4 @@
-from .models import Application, Selection, Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,EligibilityCheck,Job,PlacementDrive,Interview
+from .models import Application, Selection, Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,EligibilityCheck,Job,PlacementDrive,Interview, Notification
 from rest_framework import serializers
 
 class SubjectSerializer(serializers.ModelSerializer): 
@@ -514,3 +514,22 @@ class SelectionSerializer(serializers.ModelSerializer):
                 )
 
         return data
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Notification
+
+        fields = [
+            "id",
+            "user",
+            "notification_type",
+            "message",
+            "is_read",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
