@@ -96,7 +96,6 @@ class  StudentSerializer(serializers.ModelSerializer):
     )
 
     certifications = CertificationSerializer(
-    source="certifications",
     many=True,
     read_only=True
 )

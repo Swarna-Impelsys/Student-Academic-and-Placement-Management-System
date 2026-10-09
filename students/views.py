@@ -1,7 +1,9 @@
 from django.http import request
 from django.db.models import Sum, Avg, Count,Q
 from django.utils import timezone
+from rest_framework.pagination import PageNumberPagination
 from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,Job, EligibilityCheck,PlacementDrive, Application, Interview, Selection, Notification
+from django.db.models import Q
 from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,EligibilityCheckSerializer,JobSerializer,  PlacementDriveSerializer, ApplicationSerializer,  InterviewSerializer, SelectionSerializer,NotificationSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -64,14 +66,43 @@ class StudentListCreateAPIView(APIView):
     
     permission_classes=[IsAuthenticated,StudentManagementPermissions]
     #Get all student data
-    def get(self,request):
-        student=Student.objects.all()
-        serializer=StudentSerializer(
-            student,many=True
+    def get(self, request):
+        students = Student.objects.all().order_by("id")
+
+        # 1. Search by student name or email
+        search = request.query_params.get("search")
+        if search:
+            students = students.filter(
+                Q(Name__icontains=search) |
+                Q(Email__icontains=search)
             )
-        return Response( 
-            serializer.data,
-            status=status.HTTP_200_OK
+
+        # 2. Filter by status
+        student_status = request.query_params.get("status")
+        if student_status:
+            students = students.filter(status=student_status)
+
+        # 3. Filter by course ID
+        course_id = request.query_params.get("course")
+        if course_id:
+            students = students.filter(course_id=course_id)
+
+        # 4. Pagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+
+        page = paginator.paginate_queryset(
+            students,
+            request
+        )
+
+        serializer = StudentSerializer(
+            page,
+            many=True
+        )
+
+        return paginator.get_paginated_response(
+            serializer.data
         )
     
     # post student data
@@ -728,19 +759,43 @@ class CompanyListCreateAPIView(APIView):
 
     permission_classes = [ IsAuthenticated, CompanyPermission]
     parser_classes = [MultiPartParser, FormParser]
-
     def get(self, request):
-
         companies = Company.objects.all()
 
-        serializer = CompanySerializer(
+        # 1. Search by company name, description, or location
+        search = request.query_params.get("search")
+
+        if search:
+            companies = companies.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search) |
+                Q(location__icontains=search)
+            )
+
+        # 2. Filter by active status
+        is_active = request.query_params.get("is_active")
+
+        if is_active is not None and is_active.lower() in ["true", "false"]:
+            companies = companies.filter(
+                is_active=is_active.lower() == "true"
+            )
+
+        # 3. Pagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+
+        page = paginator.paginate_queryset(
             companies,
+            request
+        )
+
+        serializer = CompanySerializer(
+            page,
             many=True
         )
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
+        return paginator.get_paginated_response(
+            serializer.data
         )
 
     def post(self, request):
@@ -955,8 +1010,34 @@ class JobListCreateAPIView(APIView):
 
     def get(self, request):
         jobs = Job.objects.all()
-        serializer = JobSerializer(jobs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        search = request.query_params.get("search")
+        if search:
+            jobs = jobs.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search) |
+                Q(job_type__icontains=search) |
+                Q(location__icontains=search)
+                )
+            job_type = request.query_params.get("job_type")
+            if job_type:
+                jobs = jobs.filter(job_type__iexact=job_type)
+
+            location = request.query_params.get("location")
+            if location:
+                jobs = jobs.filter(location__icontains=location)
+
+            is_active = request.query_params.get("is_active")
+            if is_active is not None:
+                jobs = jobs.filter(is_active=is_active.lower() == "true")
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+
+        page = paginator.paginate_queryset(jobs, request)
+
+        serializer = JobSerializer(page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = JobSerializer(data=request.data)
@@ -1030,21 +1111,39 @@ class JobDetailAPIView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+
 class PlacementDriveListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         placement_drives = PlacementDrive.objects.all()
 
-        serializer = PlacementDriveSerializer(
-            placement_drives,
-            many=True
+        # Search
+        search = request.query_params.get("search")
+        if search:
+            placement_drives = placement_drives.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search) |
+                Q(location__icontains=search)
+            )
+
+        # Filter by active status
+        is_active = request.query_params.get("is_active")
+        if is_active is not None:
+            if is_active.lower() in ["true", "false"]:
+                placement_drives = placement_drives.filter(
+                    is_active=is_active.lower() == "true"
+                )
+
+        # Pagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        page = paginator.paginate_queryset(
+            placement_drives, request
         )
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
+        serializer = PlacementDriveSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = PlacementDriveSerializer(
@@ -1227,12 +1326,10 @@ class ApplicationListCreateAPIView(APIView):
         )
 
     def get(self, request):
-
-        applications = Application.objects.all()
+        applications = Application.objects.all().order_by("id")
 
         # STUDENT → ONLY THEIR OWN APPLICATIONS
         if request.user.groups.filter(name="Student").exists():
-
             try:
                 student = request.user.student
             except Student.DoesNotExist:
@@ -1241,16 +1338,29 @@ class ApplicationListCreateAPIView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
+            applications = applications.filter(student=student)
+
+        # SEARCH by job title
+        search = request.query_params.get("search")
+        if search:
             applications = applications.filter(
-                student=student
+                job__title__icontains=search
             )
 
-        serializer = ApplicationSerializer(
-            applications,
-            many=True
-        )
+        # FILTER by application status
+        application_status = request.query_params.get("status")
+        if application_status:
+            applications = applications.filter(
+                status=application_status
+            )
 
-        return Response(serializer.data)
+        # PAGINATION
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        page = paginator.paginate_queryset(applications, request)
+
+        serializer = ApplicationSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class ApplicationDetailAPIView(APIView):
@@ -1306,19 +1416,15 @@ class InterviewListCreateAPIView(APIView):
     ]
 
     def get(self, request):
-
-        interviews = Interview.objects.all()
+        interviews = Interview.objects.all().order_by("id")
 
         # STUDENT → ONLY THEIR OWN INTERVIEWS
         if request.user.groups.filter(name="Student").exists():
-
             try:
                 student = request.user.student
             except Student.DoesNotExist:
                 return Response(
-                    {
-                        "error": "Student profile not found."
-                    },
+                    {"error": "Student profile not found."},
                     status=status.HTTP_404_NOT_FOUND
                 )
 
@@ -1326,15 +1432,28 @@ class InterviewListCreateAPIView(APIView):
                 application__student=student
             )
 
-        serializer = InterviewSerializer(
-            interviews,
-            many=True
-        )
+        # SEARCH by job title
+        search = request.query_params.get("search")
+        if search:
+            interviews = interviews.filter(
+                application__job__title__icontains=search
+            )
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
+        # FILTER by interview status
+        interview_status = request.query_params.get("status")
+        if interview_status:
+            interviews = interviews.filter(
+                status=interview_status
+            )
+
+        # PAGINATION
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        page = paginator.paginate_queryset(interviews, request)
+
+        serializer = InterviewSerializer(page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
 
@@ -1637,24 +1756,37 @@ class NotificationListCreateAPIView(APIView):
     ]
 
     def get(self, request):
-
-        notifications = Notification.objects.all()
-
-        # Student can see only their own notifications
+        notifications = Notification.objects.all().order_by("id")
+        # STUDENT → ONLY THEIR OWN NOTIFICATIONS
         if request.user.groups.filter(name="Student").exists():
             notifications = notifications.filter(
                 user=request.user
             )
 
-        serializer = NotificationSerializer(
-            notifications,
-            many=True
-        )
+        # SEARCH by title or message
+        search = request.query_params.get("search")
+        if search:
+            notifications = notifications.filter(
+                Q(message__icontains=search) |
+                Q(notification_type__icontains=search)
+            )
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
+        # FILTER by read/unread status
+        is_read = request.query_params.get("is_read")
+        if is_read is not None:
+            if is_read.lower() in ["true", "false"]:
+                notifications = notifications.filter(
+                    is_read=is_read.lower() == "true"
+                )
+
+        # PAGINATION
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        page = paginator.paginate_queryset(notifications, request)
+
+        serializer = NotificationSerializer(page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
 
