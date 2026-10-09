@@ -2,9 +2,9 @@ from django.http import request
 from django.db.models import Sum, Avg, Count,Q
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
-from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,Job, EligibilityCheck,PlacementDrive, Application, Interview, Selection, Notification
+from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,Job, EligibilityCheck,PlacementDrive, Application, Interview, Selection, Notification, AuditLog
 from django.db.models import Q
-from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,EligibilityCheckSerializer,JobSerializer,  PlacementDriveSerializer, ApplicationSerializer,  InterviewSerializer, SelectionSerializer,NotificationSerializer
+from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,EligibilityCheckSerializer,JobSerializer,  PlacementDriveSerializer, ApplicationSerializer,  InterviewSerializer, SelectionSerializer,NotificationSerializer, AuditLogSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
@@ -31,6 +31,22 @@ from .permissions import (
     InterviewPermission,
     SelectionPermission,
     NotificationPermission
+    )
+
+
+def create_audit_log(
+    user,
+    action,
+    model_name,
+    record_id,
+    description
+):
+    AuditLog.objects.create(
+        user=user,
+        action=action,
+        model_name=model_name,
+        record_id=str(record_id),
+        description=description
     )
 
 #login APIView
@@ -76,8 +92,7 @@ class StudentListCreateAPIView(APIView):
                 Q(Name__icontains=search) |
                 Q(Email__icontains=search)
             )
-
-        # 2. Filter by status
+            # 2. Filter by status
         student_status = request.query_params.get("status")
         if student_status:
             students = students.filter(status=student_status)
@@ -106,12 +121,19 @@ class StudentListCreateAPIView(APIView):
         )
     
     # post student data
-    def post(self,request):
-        serializer=StudentSerializer(
+    def post(self, request):
+        serializer = StudentSerializer(
             data=request.data
-            )
+        )
         if serializer.is_valid():
-            serializer.save()
+            student = serializer.save()
+            create_audit_log(
+                user=request.user,
+                action="CREATE",
+                model_name="Student",
+                record_id=student.id,
+                description=f"Created student: {student.Name}"
+            )
             return Response(
                 serializer.data,
                 status=status.HTTP_201_CREATED
@@ -160,6 +182,13 @@ class StudentDetailAPIView(APIView):
         )
         if serializer.is_valid():
             serializer.save()
+            create_audit_log(
+    user=request.user,
+    action="UPDATE",
+    model_name="Student",
+    record_id=student.id,
+    description=f"Updated student: {student.Name}"
+)
             return Response(
             serializer.data,
             status=status.HTTP_200_OK
@@ -197,18 +226,38 @@ class StudentDetailAPIView(APIView):
         )
 
     #DELETE
-    def delete(self, request,id):
-        student=Student.objects.get(id=id)
-        self.check_object_permissions(request,student)
+    def delete(self, request, id):
+        student = Student.objects.filter(id=id).first()
+
         if student is None:
             return Response(
                 {
-                    "error":"Student not found"
+                    "error": "Student not found"
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
-        if student.Image: 
-          student.delete()
+
+        self.check_object_permissions(request, student)
+
+        student_name = student.Name
+        student_id = student.id
+
+        # Create audit log before deleting the student
+        create_audit_log(
+            user=request.user,
+            action="DELETE",
+            model_name="Student",
+            record_id=student_id,
+            description=f"Deleted student: {student_name}"
+        )
+
+        # Delete the image file if one exists
+        if student.Image:
+            student.Image.delete(save=False)
+
+        # Delete the student record
+        student.delete()
+
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
@@ -1954,3 +2003,26 @@ class DashboardAPIView(APIView):
         },
         status=status.HTTP_200_OK
     )
+
+class AuditLogListAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        DashboardPermission
+    ]
+
+    def get(self, request):
+        audit_logs = AuditLog.objects.all().order_by("-timestamp")
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+
+        page = paginator.paginate_queryset(
+            audit_logs,
+            request,
+            view=self
+        )
+
+        serializer = AuditLogSerializer(page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)

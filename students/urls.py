@@ -3,6 +3,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import(
     
     ApplicationDetailAPIView,
+    AuditLogListAPIView,
     DashboardAPIView,
     EligibilityCheckAPIView,
     EligibilityCheckListAPIView,
@@ -89,6 +90,8 @@ urlpatterns = [
     path("notifications/",NotificationListCreateAPIView.as_view(),name="notification-list-create"),
     path("notifications/<int:id>/read/",NotificationMarkReadAPIView.as_view(),name="notification-mark-read"),
     path("dashboard/",DashboardAPIView.as_view(),name="dashboard"),
+    path("audit-logs/", AuditLogListAPIView.as_view(),name="audit-logs"),
+    
 
 
 

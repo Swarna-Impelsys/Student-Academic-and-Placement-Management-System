@@ -477,3 +477,42 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.notification_type}"
+
+
+class AuditLog(models.Model):
+
+    ACTION_CHOICES = [
+        ("CREATE", "Create"),
+        ("UPDATE", "Update"),
+        ("DELETE", "Delete"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="audit_logs"
+    )
+
+    action = models.CharField(
+        max_length=10,
+        choices=ACTION_CHOICES
+    )
+
+    model_name = models.CharField(
+        max_length=100
+    )
+
+    record_id = models.CharField(
+        max_length=100
+    )
+
+    description = models.TextField()
+
+    timestamp = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.user} - {self.action} - {self.model_name}"

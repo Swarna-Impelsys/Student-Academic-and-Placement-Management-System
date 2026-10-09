@@ -1,4 +1,4 @@
-from .models import Application, Selection, Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,EligibilityCheck,Job,PlacementDrive,Interview, Notification
+from .models import Application, Selection, Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,EligibilityCheck,Job,PlacementDrive,Interview, Notification, AuditLog
 from rest_framework import serializers
 
 class SubjectSerializer(serializers.ModelSerializer): 
@@ -531,4 +531,18 @@ class NotificationSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "created_at",
+        ]
+
+class AuditLogSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AuditLog
+        fields = "__all__"
+        read_only_fields = [
+            "user",
+            "action",
+            "model_name",
+            "record_id",
+            "description",
+            "timestamp",
         ]
