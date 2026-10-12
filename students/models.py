@@ -185,34 +185,20 @@ class PlacementDrive(models.Model):
         on_delete=models.CASCADE,
         related_name="placement_drives"
     )
-
     title = models.CharField(max_length=150)
-
     description = models.TextField(
         blank=True,
         null=True
     )
-
     drive_date = models.DateField()
-
     application_start_date = models.DateField()
-
     application_end_date = models.DateField()
-
-    location = models.CharField(
-        max_length=200
-    )
-
-    is_active = models.BooleanField(
-        default=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    location = models.CharField(max_length=200)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return f"{self.company.name} - {self.title}"
 
 
 class Job(models.Model):
@@ -221,38 +207,32 @@ class Job(models.Model):
         on_delete=models.CASCADE,
         related_name="jobs"
     )
-
     title = models.CharField(max_length=150)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(
+        blank=True,
+        null=True
+    )
     job_type = models.CharField(max_length=50)
     location = models.CharField(max_length=200)
-
     salary = models.DecimalField(
         max_digits=10,
         decimal_places=2
     )
-
     vacancies = models.PositiveIntegerField(default=1)
-
     minimum_age = models.PositiveIntegerField(
         null=True,
         blank=True
     )
-
     minimum_marks = models.FloatField(
         null=True,
         blank=True
     )
-
     minimum_attendance = models.FloatField(
         null=True,
         blank=True
     )
-
     is_active = models.BooleanField(default=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
-
 
     required_course = models.ForeignKey(
         Course,
@@ -261,47 +241,37 @@ class Job(models.Model):
         blank=True,
         related_name="jobs"
     )
-
     required_skills = models.ManyToManyField(
         Skill,
         blank=True,
         related_name="jobs"
     )
+    maximum_backlogs = models.PositiveIntegerField(default=0)
 
-    maximum_backlogs = models.PositiveIntegerField(
-        default=0
-        )
     def __str__(self):
-            return f"{self.placement_drive.title} - {self.title}"
+        return f"{self.placement_drive.title} - {self.title}"
 
 
 class EligibilityCheck(models.Model):
-
     student = models.ForeignKey(
         Student,
         on_delete=models.CASCADE,
         related_name="eligibility_checks"
     )
-
     job = models.ForeignKey(
         Job,
         on_delete=models.CASCADE,
         related_name="eligibility_checks"
     )
-
     is_eligible = models.BooleanField()
-
     reason = models.TextField()
-
-    checked_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    checked_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.student.Name} - {self.job.title}" 
+        return f"{self.student.Name} - {self.job.title}"
+
 
 class Application(models.Model):
-
     STATUS_CHOICES = [
         ("pending", "Pending"),
         ("shortlisted", "Shortlisted"),
@@ -314,26 +284,18 @@ class Application(models.Model):
         on_delete=models.CASCADE,
         related_name="applications"
     )
-
     job = models.ForeignKey(
         Job,
         on_delete=models.CASCADE,
         related_name="applications"
     )
-
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default="pending"
     )
-
-    applied_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    applied_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.student.Name} - {self.job.title}"  
+        return f"{self.student.Name} - {self.job.title}"
