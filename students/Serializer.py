@@ -1,4 +1,23 @@
-from .models import Application, Selection, Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,EligibilityCheck,Job,PlacementDrive,Interview, Notification
+
+from .models import (
+    Application,
+    Selection,
+    Student,
+    Course,
+    StudentProfile,
+    Subject,
+    AcademicRecord,
+    Skill,
+    Certification,
+    Company,
+    EligibilityCheck,
+    Job,
+    PlacementDrive,
+    Interview,
+    Notification,
+)
+
+
 from rest_framework import serializers
 
 class SubjectSerializer(serializers.ModelSerializer): 
@@ -153,41 +172,6 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "date_of_birth"
         ]
 
-    # custom validation(name field validation)
-    def validate_Name(self,value):
-        if len(value) < 3:
-            raise serializers.ValidationError("Name must be at least 3 characters")
-        return value
-
-    # custom validation( age field validation)
-    def validate_Age(self,value):
-        if value <= 18:
-            raise serializers.ValidationError("Age must be 18 or above")
-        return value
-
-    # custom validation(phone field validation)
-    def validate_Phone(self,value):
-        if len(str(value)) != 10:
-            raise serializers.ValidationError("Phone number must be 10 characters")
-        return value
-
-    # custom validation( age and course object validation)
-    def validate(self, attrs):
-        age = attrs.get("Age")
-        course = attrs.get("Course")
-
-        restricted_courses = [
-            "CEBA",
-            "HEBA"
-        ]
-
-        if age < 18 and course.name in restricted_courses:
-            raise serializers.ValidationError(
-                "Students below 18 cannot select this course."
-            )
-
-        return attrs
-
 class AcademicRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcademicRecord
@@ -252,6 +236,59 @@ class CompanySerializer(serializers.ModelSerializer):
             )
 
         return attrs
+class PlacementDriveSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PlacementDrive
+
+        fields = [
+            "id",
+            "company",
+            "title",
+            "description",
+            "drive_date",
+            "application_start_date",
+            "application_end_date",
+            "location",
+            "is_active",
+            "created_at"
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at"
+        ]
+
+    def validate_title(self, value):
+        value = value.strip()
+
+        if len(value) < 3:
+            raise serializers.ValidationError(
+                "Placement drive title must be at least 3 characters."
+            )
+
+        return value
+
+    def validate(self, attrs):
+        start_date = attrs.get("application_start_date")
+        end_date = attrs.get("application_end_date")
+        drive_date = attrs.get("drive_date")
+
+        if start_date and end_date:
+            if end_date < start_date:
+                raise serializers.ValidationError(
+                    "Application end date cannot be before application start date."
+                )
+
+        if end_date and drive_date:
+            if drive_date < end_date:
+                raise serializers.ValidationError(
+                    "Drive date cannot be before application end date."
+                )
+
+        return attrs
+
+
 
 class EligibilityCheckSerializer(serializers.ModelSerializer):
 
@@ -361,36 +398,6 @@ class JobSerializer(serializers.ModelSerializer):
 
         return value
 
-class PlacementDriveSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = PlacementDrive
-        fields = [
-            "id",
-            "company",
-            "title",
-            "description",
-            "drive_date",
-            "application_start_date",
-            "application_end_date",
-            "location",
-            "is_active",
-            "created_at",
-        ]
-        read_only_fields = ["id", "created_at"]
-
-    def validate_title(self, value):
-        value = value.strip()
-
-        if len(value) < 3:
-            raise serializers.ValidationError(
-                "Placement drive title must be at least 3 characters."
-            )
-
-        return value
-        read_only_fields = [
-            "id",
-        ]
 
 class ApplicationSerializer(serializers.ModelSerializer):
 
@@ -413,20 +420,35 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "updated_at"
         ]
 
+    
     def validate(self, data):
+        student = data.get(
+            "student",
+            getattr(self.instance, "student", None)
+        )
+        job = data.get(
+            "job",
+            getattr(self.instance, "job", None)
+        )
 
-        student = data["student"]
-        job = data["job"]
-
-        if Application.objects.filter(
-            student=student,
-            job=job
-        ).exists():
-            raise serializers.ValidationError(
-                "Student has already applied for this job."
+        if student and job:
+            existing = Application.objects.filter(
+                student=student,
+                job=job
             )
 
+            if self.instance:
+                existing = existing.exclude(
+                    pk=self.instance.pk
+                )
+
+            if existing.exists():
+                raise serializers.ValidationError(
+                    "Student has already applied for this job."
+                )
+
         return data
+
 
 class InterviewSerializer(serializers.ModelSerializer):
 
@@ -515,6 +537,7 @@ class SelectionSerializer(serializers.ModelSerializer):
 
         return data
 
+
 class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -531,5 +554,6 @@ class NotificationSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "is_read",
             "created_at",
         ]
