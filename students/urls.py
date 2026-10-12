@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView 
 from .views import(
+    PlacementDriveListCreateAPIView,
     loginAPIView,
     StudentListCreateAPIView,
     StudentDetailAPIView,
@@ -24,7 +25,8 @@ from .views import(
     CertificationListCreateAPIView,
     CertificationDetailAPIView,
     CompanyListCreateAPIView,
-    CompanyDetailAPIView
+    CompanyDetailAPIView,
+    PlacementDriveDetailAPIView
 
 )
 urlpatterns = [
@@ -53,6 +55,8 @@ urlpatterns = [
     path("certifications/<int:id>/",CertificationDetailAPIView.as_view(),name="certification-detail"),
     path("companies/", CompanyListCreateAPIView.as_view(), name="company-list-create"),
     path("companies/<int:id>/", CompanyDetailAPIView.as_view(),name="company-detail"),
+    path("placement-drives/",PlacementDriveListCreateAPIView.as_view(),name="placement-drive-list-create"),
+    path("placement-drives/<int:id>/", PlacementDriveDetailAPIView.as_view(),name="placement-drive-detail"),
 
 
 
