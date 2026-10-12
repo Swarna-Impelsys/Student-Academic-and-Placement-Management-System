@@ -229,3 +229,38 @@ class CompanyPermission(BasePermission):
             return request.method in SAFE_METHODS
 
         return False
+
+class PlacementDrivePermission(BasePermission):
+
+    def has_permission(self, request, view):
+
+        if request.user.groups.filter(name="Admin").exists():
+            return True
+
+        if request.user.groups.filter(name="Teacher").exists():
+            return request.method in [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH"
+            ]
+
+        if request.user.groups.filter(name="Student").exists():
+            return request.method in SAFE_METHODS
+
+        return False
+
+class JobPermission(BasePermission):
+
+    def has_permission(self, request, view):
+
+        if request.user.groups.filter(name="Admin").exists():
+            return True
+
+        if request.user.groups.filter(name="Teacher").exists():
+            return request.method in ["GET", "POST", "PUT", "PATCH"]
+
+        if request.user.groups.filter(name="Student").exists():
+            return request.method in SAFE_METHODS
+
+        return False
