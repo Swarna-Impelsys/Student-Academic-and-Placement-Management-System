@@ -1,21 +1,57 @@
-from django.http import request
-from django.db.models import Sum, Avg, Count,Q
+
+from django.db.models import Sum, Avg, Count, Q
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
-from .models import Student,Course,StudentProfile,Subject, AcademicRecord, Skill, Certification,Company,Job, EligibilityCheck,PlacementDrive, Application, Interview, Selection, Notification
-from django.db.models import Q
-from .Serializer import StudentSerializer,CourseSerializer,StudentProfileSerializer,AcademicRecordSerializer, SkillSerializer, CertificationSerializer,CompanySerializer,EligibilityCheckSerializer,JobSerializer,  PlacementDriveSerializer, ApplicationSerializer,  InterviewSerializer, SelectionSerializer,NotificationSerializer
+
+from .models import (
+    Student,
+    Course,
+    StudentProfile,
+    Subject,
+    AcademicRecord,
+    Skill,
+    Certification,
+    Company,
+    Job,
+    EligibilityCheck,
+    PlacementDrive,
+    Application,
+    Interview,
+    Selection,
+    Notification,
+)
+
+from .Serializer import (
+    StudentSerializer,
+    CourseSerializer,
+    StudentProfileSerializer,
+    AcademicRecordSerializer,
+    SkillSerializer,
+    CertificationSerializer,
+    CompanySerializer,
+    EligibilityCheckSerializer,
+    JobSerializer,
+    PlacementDriveSerializer,
+    ApplicationSerializer,
+    InterviewSerializer,
+    SelectionSerializer,
+    NotificationSerializer,
+    SubjectSerializer,
+)
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
 from .Serializer import SubjectSerializer
 from .services import check_student_eligibility
 from rest_framework.parsers import MultiPartParser, FormParser
+
+
 from .permissions import (
     ApplicationPermission,
     DashboardPermission,
@@ -30,8 +66,11 @@ from .permissions import (
     CompanyPermission,
     InterviewPermission,
     SelectionPermission,
-    NotificationPermission
-    )
+    NotificationPermission,
+    PlacementDrivePermission,
+    JobPermission,
+)
+
 
 #login APIView
 class loginAPIView(APIView):
@@ -123,97 +162,81 @@ class StudentListCreateAPIView(APIView):
 
 #Creating class for DetailAPIview
 class StudentDetailAPIView(APIView):
-    permission_classes=[IsAuthenticated, StudentDetailPermission,StudentImageDeletePermission]
+    permission_classes = [
+        IsAuthenticated,
+        StudentDetailPermission,
+        
+    ]
 
-    #get one student
-    def get(self,request,id):
-        student=Student.objects.get(id=id)
-        self.check_object_permissions(request,student)
-        if student is None:
-            return Response(
-                {
-                    "error":"Student not found"
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
-        serializer=StudentSerializer(
-            student
-        )
-        return Response(serializer.data,
-                        status=status.HTTP_200_OK
-                        )
+    # GET one student
+    def get(self, request, id):
+        student = get_object_or_404(Student, id=id)
+        self.check_object_permissions(request, student)
 
-    #PUT
-    def put(self,request,id):
-        student=Student.objects.get(id=id)
-        self.check_object_permissions(request,student)
-        if student is None:
-            return Response(
-                {
-                    "error":"student not found"
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
-        serializer=StudentSerializer(
-            student,
-            data=request.data
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
+        serializer = StudentSerializer(student)
+        return Response(
             serializer.data,
             status=status.HTTP_200_OK
         )
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        ) 
 
-    #PATCH
-    def patch(self,request,id):
-        student=Student.objects.get(id=id)
-        self.check_object_permissions(request,student)
-        if student is None:
-            return Response(
-                {
-                    "error":"Student not found"
-                }, 
-                status=status.HTTP_404_NOT_FOUND
-            )
-        serializer=StudentSerializer(
-             student,
-             data=request.data,
-             partial=True
-              )
+    # PUT: update the complete student
+    def put(self, request, id):
+        student = get_object_or_404(Student, id=id)
+        self.check_object_permissions(request, student)
+
+        serializer = StudentSerializer(
+            student,
+            data=request.data
+        )
+
         if serializer.is_valid():
             serializer.save()
             return Response(
                 serializer.data,
                 status=status.HTTP_200_OK
             )
+
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    #DELETE
-    def delete(self, request,id):
-        student=Student.objects.get(id=id)
-        self.check_object_permissions(request,student)
-        if student is None:
+    # PATCH: update selected fields
+    def patch(self, request, id):
+        student = get_object_or_404(Student, id=id)
+        self.check_object_permissions(request, student)
+
+        serializer = StudentSerializer(
+            student,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
             return Response(
-                {
-                    "error":"Student not found"
-                },
-                status=status.HTTP_404_NOT_FOUND
+                serializer.data,
+                status=status.HTTP_200_OK
             )
-        if student.Image: 
-          student.delete()
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # DELETE one student
+    def delete(self, request, id):
+        student = get_object_or_404(Student, id=id)
+        self.check_object_permissions(request, student)
+
+        student.delete()
+
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
 
-    #LOGOUT API VIEW
+
+#LOGOUT API VIEW
 class logoutAPIView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request):
@@ -236,8 +259,13 @@ class logoutAPIView(APIView):
             )
 
 # delete only image 
+
+# Delete only the student image
 class StudentImageDeleteAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated,
+        StudentImageDeletePermission,
+    ]
 
     def delete(self, request, id):
         student = get_object_or_404(Student, id=id)
@@ -256,7 +284,8 @@ class StudentImageDeleteAPIView(APIView):
         return Response(
             {"message": "Student has no image"},
             status=status.HTTP_404_NOT_FOUND
-        ) 
+        )
+
 
 # Course by student using relative name 
 class CourseStudentAPIView(APIView):
@@ -316,8 +345,11 @@ class ActiveStudentsAPIView(APIView):
 
         return Response(serializer.data)
 
-# get Student Profile
-class StudentProfileAPIView(APIView):
+
+
+#List  student profile
+class StudentProfileListAPIView(APIView):
+    permission_classes=[IsAuthenticated]
     def get(self,request,id):
         student=get_object_or_404(Student,id=id)
         Profile=student.profile
@@ -326,21 +358,28 @@ class StudentProfileAPIView(APIView):
         return Response(
             serializer.data
         )
-
-#create student profile
+    
+ # Create student profile
 class StudentProfileCreateAPIView(APIView):
-    permission_classes=[IsAuthenticated]
-    def post(self,request):
-        serializer=StudentProfileSerializer(data=request.data)
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = StudentProfileSerializer(data=request.data)
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
 
-# update student profile
-class StudentProfileUpdateAPIView(APIView):
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+# detail update student profile
+class StudentProfileDetailAPIView(APIView):
     permission_classes=[IsAuthenticated]
     def put(self,request,id):
         profile=get_object_or_404(StudentProfile,id=id)
@@ -360,9 +399,7 @@ class StudentProfileUpdateAPIView(APIView):
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
 
-# Delete Student Profile
-class StudentProfileDeleteAPIView(APIView):
-    permission_classes=[IsAuthenticated]
+
     def delete(self,request,id):
         profile=get_object_or_404(StudentProfile,id=id)
         profile.delete()
@@ -570,7 +607,7 @@ class SkillListCreateAPIView(APIView):
 
 # get,update and delete skill
 class SkillDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated, CertificationPermission]
+    permission_classes = [IsAuthenticated, SkillPermission]
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request, id):
@@ -903,63 +940,252 @@ class CompanyDetailAPIView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
-class EligibilityCheckAPIView(APIView):
 
-    permission_classes = [IsAuthenticated]
+class EligibilityCheckAPIView(APIView):
+    permission_classes = [IsAuthenticated, EligibilityPermission]
 
     def post(self, request):
-
         student_id = request.data.get("student")
         job_id = request.data.get("job")
 
         if not student_id or not job_id:
             return Response(
-                {
-                    "error": "student and job are required."
-                },
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "student and job are required."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            student = Student.objects.get(id=student_id)
-        except Student.DoesNotExist:
-            return Response(
-                {
-                    "error": "Student not found."
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
+        student = get_object_or_404(Student, id=student_id)
+        job = get_object_or_404(Job, id=job_id)
 
-        try:
-            job = Job.objects.get(id=job_id)
-        except Job.DoesNotExist:
-            return Response(
-                {
-                    "error": "Job not found."
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        result = check_student_eligibility(
-            student,
-            job
-        )
+        result = check_student_eligibility(student, job)
 
         eligibility_check = EligibilityCheck.objects.create(
             student=student,
             job=job,
             is_eligible=result["is_eligible"],
-            reason=result["reason"]
+            reason=result["reason"],
         )
 
-        serializer = EligibilityCheckSerializer(
-            eligibility_check
-        )
-
+        serializer = EligibilityCheckSerializer(eligibility_check)
         return Response(
             serializer.data,
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
+
+
+class PlacementDriveListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated, PlacementDrivePermission]
+
+    def get(self, request):
+        drives = PlacementDrive.objects.all()
+        serializer = PlacementDriveSerializer(drives, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = PlacementDriveSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class PlacementDriveDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated, PlacementDrivePermission]
+
+    def get(self, request, id):
+        drive = get_object_or_404(PlacementDrive, id=id)
+        serializer = PlacementDriveSerializer(drive)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, id):
+        drive = get_object_or_404(PlacementDrive, id=id)
+        serializer = PlacementDriveSerializer(drive, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def patch(self, request, id):
+        drive = get_object_or_404(PlacementDrive, id=id)
+        serializer = PlacementDriveSerializer(
+            drive,
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, id):
+        drive = get_object_or_404(PlacementDrive, id=id)
+        drive.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class JobListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated, JobPermission]
+
+    def get(self, request):
+        jobs = Job.objects.all()
+        search = request.query_params.get("search")
+        if search:
+            jobs = jobs.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search) |
+                Q(job_type__icontains=search) |
+                Q(location__icontains=search)
+                )
+            job_type = request.query_params.get("job_type")
+            if job_type:
+                jobs = jobs.filter(job_type__iexact=job_type)
+
+            location = request.query_params.get("location")
+            if location:
+                jobs = jobs.filter(location__icontains=location)
+
+            is_active = request.query_params.get("is_active")
+            if is_active is not None:
+                jobs = jobs.filter(is_active=is_active.lower() == "true")
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+
+        page = paginator.paginate_queryset(jobs, request)
+
+        serializer = JobSerializer(page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request):
+        serializer = JobSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class JobDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated, JobPermission]
+
+    def get(self, request, id):
+        job = get_object_or_404(Job, id=id)
+        serializer = JobSerializer(job)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, id):
+        job = get_object_or_404(Job, id=id)
+        serializer = JobSerializer(job, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+       
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def patch(self, request, id):
+        job = get_object_or_404(Job, id=id)
+        serializer = JobSerializer(
+            job,
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, id):
+        job = get_object_or_404(Job, id=id)
+        job.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PlacementDriveListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        placement_drives = PlacementDrive.objects.all()
+
+        # Search
+        search = request.query_params.get("search")
+        if search:
+            placement_drives = placement_drives.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search) |
+                Q(location__icontains=search)
+            )
+
+        # Filter by active status
+        is_active = request.query_params.get("is_active")
+        if is_active is not None:
+            if is_active.lower() in ["true", "false"]:
+                placement_drives = placement_drives.filter(
+                    is_active=is_active.lower() == "true"
+                )
+
+        # Pagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        page = paginator.paginate_queryset(
+            placement_drives, request
+        )
+
+        serializer = PlacementDriveSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request):
+        serializer = PlacementDriveSerializer(
+            data=request.data
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def patch(self, request, id):
+        job = get_object_or_404(Job, id=id)
+        serializer = JobSerializer(
+            job,
+            data=request.data,
+            partial=True,
+          development
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, id):
+        job = get_object_or_404(Job, id=id)
+        job.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
 class EligibilityCheckListAPIView(APIView):
 
@@ -1005,225 +1231,6 @@ class EligibilityCheckListAPIView(APIView):
             status=status.HTTP_200_OK
         )
 
-class JobListCreateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        jobs = Job.objects.all()
-        search = request.query_params.get("search")
-        if search:
-            jobs = jobs.filter(
-                Q(title__icontains=search) |
-                Q(description__icontains=search) |
-                Q(job_type__icontains=search) |
-                Q(location__icontains=search)
-                )
-            job_type = request.query_params.get("job_type")
-            if job_type:
-                jobs = jobs.filter(job_type__iexact=job_type)
-
-            location = request.query_params.get("location")
-            if location:
-                jobs = jobs.filter(location__icontains=location)
-
-            is_active = request.query_params.get("is_active")
-            if is_active is not None:
-                jobs = jobs.filter(is_active=is_active.lower() == "true")
-
-        paginator = PageNumberPagination()
-        paginator.page_size = 10
-
-        page = paginator.paginate_queryset(jobs, request)
-
-        serializer = JobSerializer(page, many=True)
-
-        return paginator.get_paginated_response(serializer.data)
-
-    def post(self, request):
-        serializer = JobSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
-            )
-
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-class JobDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, id):
-        try:
-            job = Job.objects.get(id=id)
-        except Job.DoesNotExist:
-            return Response(
-                {"error": "Job not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = JobSerializer(job)
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
-
-    def put(self, request, id):
-        try:
-            job = Job.objects.get(id=id)
-        except Job.DoesNotExist:
-            return Response(
-                {"error": "Job not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = JobSerializer(job, data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                serializer.data,
-                status=status.HTTP_200_OK
-            )
-
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    def delete(self, request, id):
-        try:
-            job = Job.objects.get(id=id)
-        except Job.DoesNotExist:
-            return Response(
-                {"error": "Job not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        job.delete()
-
-        return Response(
-            {"message": "Job deleted successfully."},
-            status=status.HTTP_204_NO_CONTENT
-        )
-
-
-class PlacementDriveListCreateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        placement_drives = PlacementDrive.objects.all()
-
-        # Search
-        search = request.query_params.get("search")
-        if search:
-            placement_drives = placement_drives.filter(
-                Q(title__icontains=search) |
-                Q(description__icontains=search) |
-                Q(location__icontains=search)
-            )
-
-        # Filter by active status
-        is_active = request.query_params.get("is_active")
-        if is_active is not None:
-            if is_active.lower() in ["true", "false"]:
-                placement_drives = placement_drives.filter(
-                    is_active=is_active.lower() == "true"
-                )
-
-        # Pagination
-        paginator = PageNumberPagination()
-        paginator.page_size = 10
-        page = paginator.paginate_queryset(
-            placement_drives, request
-        )
-
-        serializer = PlacementDriveSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
-
-    def post(self, request):
-        serializer = PlacementDriveSerializer(
-            data=request.data
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
-            )
-
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-class PlacementDriveDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, id):
-        try:
-            placement_drive = PlacementDrive.objects.get(id=id)
-        except PlacementDrive.DoesNotExist:
-            return Response(
-                {"error": "Placement drive not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = PlacementDriveSerializer(placement_drive)
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
-
-    def put(self, request, id):
-        try:
-            placement_drive = PlacementDrive.objects.get(id=id)
-        except PlacementDrive.DoesNotExist:
-            return Response(
-                {"error": "Placement drive not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = PlacementDriveSerializer(
-            placement_drive,
-            data=request.data
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-
-            return Response(
-                serializer.data,
-                status=status.HTTP_200_OK
-            )
-
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    def delete(self, request, id):
-        try:
-            placement_drive = PlacementDrive.objects.get(id=id)
-        except PlacementDrive.DoesNotExist:
-            return Response(
-                {"error": "Placement drive not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        placement_drive.delete()
-
-        return Response(
-            {"message": "Placement drive deleted successfully."},
-            status=status.HTTP_204_NO_CONTENT
-        )
 
 class ApplicationListCreateAPIView(APIView):
 
@@ -1408,6 +1415,7 @@ class ApplicationDetailAPIView(APIView):
 
         return Response(serializer.data)
 
+
 class InterviewListCreateAPIView(APIView):
 
     permission_classes = [
@@ -1466,17 +1474,20 @@ class InterviewListCreateAPIView(APIView):
             interview = serializer.save()
 
             # CREATE AUTOMATIC NOTIFICATION
-            Notification.objects.create(
-                user=interview.application.student.user,
-                notification_type="interview",
-                message=(
-                    f"Your interview for "
-                    f"{interview.application.job.title} "
-                    f"has been scheduled on "
-                    f"{interview.interview_date} "
-                    f"at {interview.interview_time}."
+            student_user = interview.application.student.user
+
+            if student_user is not None:
+                Notification.objects.create(
+                    user=student_user,
+                    notification_type="interview",
+                    message=(
+                        f"Your interview for "
+                        f"{interview.application.job.title} "
+                        f"has been scheduled on "
+                        f"{interview.interview_date} "
+                        f"at {interview.interview_time}."
+                    )
                 )
-            )
 
             return Response(
                 InterviewSerializer(interview).data,
@@ -1583,6 +1594,7 @@ class InterviewDetailAPIView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+
 class SelectionListCreateAPIView(APIView):
 
     permission_classes = [
@@ -1601,9 +1613,7 @@ class SelectionListCreateAPIView(APIView):
                 student = request.user.student
             except Student.DoesNotExist:
                 return Response(
-                    {
-                        "error": "Student profile not found."
-                    },
+                    {"error": "Student profile not found."},
                     status=status.HTTP_404_NOT_FOUND
                 )
 
@@ -1632,15 +1642,18 @@ class SelectionListCreateAPIView(APIView):
             selection = serializer.save()
 
             # CREATE AUTOMATIC NOTIFICATION
-            Notification.objects.create(
-                user=selection.application.student.user,
-                notification_type="selection",
-                message=(
-                    f"Your selection status for "
-                    f"{selection.application.job.title} "
-                    f"is {selection.get_status_display()}."
+            student_user = selection.application.student.user
+
+            if student_user is not None:
+                Notification.objects.create(
+                    user=student_user,
+                    notification_type="selection",
+                    message=(
+                        f"Your selection status for "
+                        f"{selection.application.job.title} "
+                        f"is {selection.get_status_display()}."
+                    )
                 )
-            )
 
             return Response(
                 SelectionSerializer(selection).data,
@@ -1651,6 +1664,8 @@ class SelectionListCreateAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
 class SelectionDetailAPIView(APIView):
 
     permission_classes = [

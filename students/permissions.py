@@ -1,5 +1,3 @@
-from urllib import request
-
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 
 # custom permissions for get and post
@@ -22,17 +20,6 @@ class IsStudentOwner(BasePermission):
         print("Student owner:", obj.user)
         return obj.user == request.user
 
-#RBAC for IsAdminOrTeacher
-#'''' Only the admin and the teacher can get and post data and
-#  we assign this rolebased to the StudentListCreateAPIView which has
-# get and post method ''''
-class IsAdminOrTeacher(BasePermission):
-    def has_permission(self, request, view):
-        if request.user.groups.filter(name="Admin").exists():
-            return True
-        if request.user.groups.filter(name="Teacher").exists():
-            return True
-        return False
 
 # '''' RBAC performing the resulble permissions '''
 class RoleBasedPermission(BasePermission):
@@ -230,22 +217,28 @@ class CompanyPermission(BasePermission):
 
         return False
 
+
+
 class EligibilityPermission(BasePermission):
-
     def has_permission(self, request, view):
-
-        if not request.user.is_authenticated:
+        if not request.user or not request.user.is_authenticated:
             return False
 
         if request.method == "GET":
             return True
 
+        if request.method == "POST":
+            return request.user.groups.filter(
+                name__in=["Admin", "Teacher"]
+            ).exists()
+
         return False
+
+
 
 class ApplicationPermission(BasePermission):
 
     def has_permission(self, request, view):
-
         if not request.user.is_authenticated:
             return False
 
@@ -268,13 +261,10 @@ class ApplicationPermission(BasePermission):
 
         return False
 
-from rest_framework.permissions import BasePermission
-
 
 class InterviewPermission(BasePermission):
 
     def has_permission(self, request, view):
-
         if not request.user or not request.user.is_authenticated:
             return False
 
@@ -284,16 +274,16 @@ class InterviewPermission(BasePermission):
         ).exists():
             return True
 
-        # Student can access their own interviews
+        # Student can view interviews
         if request.user.groups.filter(name="Student").exists():
-            return request.method in ["GET"]
+            return request.method == "GET"
 
         return False
+
 
 class SelectionPermission(BasePermission):
 
     def has_permission(self, request, view):
-
         if not request.user or not request.user.is_authenticated:
             return False
 
@@ -303,13 +293,12 @@ class SelectionPermission(BasePermission):
         ).exists():
             return True
 
-        # Student can only view
-        if request.user.groups.filter(
-            name="Student"
-        ).exists():
+        # Student can only view selections
+        if request.user.groups.filter(name="Student").exists():
             return request.method == "GET"
 
         return False
+
 
 class NotificationPermission(BasePermission):
 
@@ -324,11 +313,12 @@ class NotificationPermission(BasePermission):
         ).exists():
             return True
 
-        # Student can only GET
+        # Student can view notifications and mark them as read
         if request.user.groups.filter(name="Student").exists():
             return request.method in ["GET", "PATCH"]
 
         return False
+
 
 class DashboardPermission(BasePermission):
 
@@ -337,9 +327,43 @@ class DashboardPermission(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        if request.user.groups.filter(
+        # Only Admin and Teacher can access the dashboard
+        return request.user.groups.filter(
             name__in=["Admin", "Teacher"]
-        ).exists():
+        ).exists()
+
+
+class PlacementDrivePermission(BasePermission):
+
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.groups.filter(name="Admin").exists():
             return True
+
+        if request.user.groups.filter(name="Teacher").exists():
+            return request.method in ["GET", "POST", "PUT", "PATCH"]
+
+        if request.user.groups.filter(name="Student").exists():
+            return request.method in SAFE_METHODS
+
+        return False
+
+
+class JobPermission(BasePermission):
+
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.groups.filter(name="Admin").exists():
+            return True
+
+        if request.user.groups.filter(name="Teacher").exists():
+            return request.method in ["GET", "POST", "PUT", "PATCH"]
+
+        if request.user.groups.filter(name="Student").exists():
+            return request.method in SAFE_METHODS
 
         return False
