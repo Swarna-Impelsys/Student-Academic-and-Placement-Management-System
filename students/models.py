@@ -178,102 +178,124 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
-class PlacementDrive(models.Model):
 
+class PlacementDrive(models.Model):
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
         related_name="placement_drives"
     )
-
-    title = models.CharField(
-        max_length=150
-    )
-
+    title = models.CharField(max_length=150)
     description = models.TextField(
         blank=True,
         null=True
     )
-
     drive_date = models.DateField()
-
     application_start_date = models.DateField()
-
     application_end_date = models.DateField()
-
-    location = models.CharField(
-        max_length=200
-    )
-
-    is_active = models.BooleanField(
-        default=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    location = models.CharField(max_length=200)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.company.name} - {self.title}"
 
-class Job(models.Model):
 
+class Job(models.Model):
     placement_drive = models.ForeignKey(
         PlacementDrive,
         on_delete=models.CASCADE,
         related_name="jobs"
     )
-
-    title = models.CharField(
-        max_length=150
-    )
-
+    title = models.CharField(max_length=150)
     description = models.TextField(
         blank=True,
         null=True
     )
-
-    job_type = models.CharField(
-        max_length=50
-    )
-
-    location = models.CharField(
-        max_length=200
-    )
-
+    job_type = models.CharField(max_length=50)
+    location = models.CharField(max_length=200)
     salary = models.DecimalField(
         max_digits=10,
         decimal_places=2
     )
-
-    vacancies = models.PositiveIntegerField(
-        default=1
-    )
-
+    vacancies = models.PositiveIntegerField(default=1)
     minimum_age = models.PositiveIntegerField(
         null=True,
         blank=True
     )
-
     minimum_marks = models.FloatField(
         null=True,
         blank=True
     )
-
     minimum_attendance = models.FloatField(
         null=True,
         blank=True
     )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    is_active = models.BooleanField(
-        default=True
+    required_course = models.ForeignKey(
+        Course,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="jobs"
     )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
+    required_skills = models.ManyToManyField(
+        Skill,
+        blank=True,
+        related_name="jobs"
     )
+    maximum_backlogs = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.placement_drive.title} - {self.title}"
 
-    
+
+class EligibilityCheck(models.Model):
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name="eligibility_checks"
+    )
+    job = models.ForeignKey(
+        Job,
+        on_delete=models.CASCADE,
+        related_name="eligibility_checks"
+    )
+    is_eligible = models.BooleanField()
+    reason = models.TextField()
+    checked_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.Name} - {self.job.title}"
+
+
+class Application(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("shortlisted", "Shortlisted"),
+        ("rejected", "Rejected"),
+        ("selected", "Selected"),
+    ]
+
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name="applications"
+    )
+    job = models.ForeignKey(
+        Job,
+        on_delete=models.CASCADE,
+        related_name="applications"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+    applied_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.student.Name} - {self.job.title}"

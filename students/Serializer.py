@@ -1,4 +1,17 @@
-from .models import Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,PlacementDrive,Job
+from .models import (
+    Application,
+    Student,
+    Course,
+    StudentProfile,
+    Subject,
+    AcademicRecord,
+    Skill,
+    Certification,
+    Company,
+    EligibilityCheck,
+    Job,
+    PlacementDrive,
+)
 from rest_framework import serializers
 
 class SubjectSerializer(serializers.ModelSerializer): 
@@ -304,6 +317,29 @@ class PlacementDriveSerializer(serializers.ModelSerializer):
 
         return attrs
 
+
+
+class EligibilityCheckSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EligibilityCheck
+
+        fields = [
+            "id",
+            "student",
+            "job",
+            "is_eligible",
+            "reason",
+            "checked_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "is_eligible",
+            "reason",
+            "checked_at",
+        ]
+
 class JobSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -321,13 +357,16 @@ class JobSerializer(serializers.ModelSerializer):
             "minimum_age",
             "minimum_marks",
             "minimum_attendance",
+            "required_course",
+            "required_skills",
+            "maximum_backlogs",
             "is_active",
-            "created_at"
+            "created_at",
         ]
 
         read_only_fields = [
             "id",
-            "created_at"
+            "created_at",
         ]
 
     def validate_title(self, value):
@@ -356,6 +395,14 @@ class JobSerializer(serializers.ModelSerializer):
 
         return value
 
+    def validate_minimum_age(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError(
+                "Minimum age must be greater than 0."
+            )
+
+        return value
+
     def validate_minimum_marks(self, value):
         if value is not None and (value < 0 or value > 100):
             raise serializers.ValidationError(
@@ -372,19 +419,51 @@ class JobSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate_minimum_age(self, value):
-        if value is not None and value <= 0:
+    def validate_maximum_backlogs(self, value):
+        if value < 0:
             raise serializers.ValidationError(
-                "Minimum age must be greater than 0."
+                "Maximum backlogs cannot be negative."
             )
 
         return value
 
 
+class ApplicationSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Application
 
+        fields = [
+            "id",
+            "student",
+            "job",
+            "status",
+            "applied_at",
+            "updated_at"
+        ]
 
+        read_only_fields = [
+            "id",
+            "status",
+            "applied_at",
+            "updated_at"
+        ]
 
+    def validate(self, data):
 
+        student = data["student"]
+        job = data["job"]
 
+        if Application.objects.filter(
+            student=student,
+            job=job
+        ).exists():
+            raise serializers.ValidationError(
+                "Student has already applied for this job."
+            )
 
+        return data
+
+    
+
+    
