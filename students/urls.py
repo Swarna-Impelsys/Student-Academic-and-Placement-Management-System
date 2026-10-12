@@ -1,18 +1,14 @@
 
-
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
     ApplicationDetailAPIView,
     ApplicationListCreateAPIView,
-    DashboardAPIView,
     EligibilityCheckAPIView,
     EligibilityCheckListAPIView,
     JobDetailAPIView,
     JobListCreateAPIView,
-    NotificationListCreateAPIView,
-    NotificationMarkReadAPIView,
     PlacementDriveListCreateAPIView,
     PlacementDriveDetailAPIView,
     loginAPIView,
@@ -24,9 +20,10 @@ from .views import (
     StudentbyCourseAPIView,
     CourseDetailAPIView,
     ActiveStudentsAPIView,
-    StudentProfileDetailAPIView,
-    StudentProfileListAPIView,
+    StudentProfileAPIView,
     StudentProfileCreateAPIView,
+    StudentProfileUpdateAPIView,
+    StudentProfileDeleteAPIView,
     StudentsBySubjectAPIView,
     CourseListCreateAPIView,
     SubjectListCreateAPIView,
@@ -41,7 +38,7 @@ from .views import (
     InterviewListCreateAPIView,
     InterviewDetailAPIView,
     SelectionListCreateAPIView,
-    SelectionDetailAPIView,
+    SelectionDetailAPIView
 )
 
 urlpatterns = [
@@ -153,55 +150,12 @@ urlpatterns = [
     path("eligibility/check/", EligibilityCheckAPIView.as_view(), name="eligibility-check"),
     path("eligibility/", EligibilityCheckListAPIView.as_view(), name="eligibility-list"),
 
-    path(
-        "applications/",
-        ApplicationListCreateAPIView.as_view(),
-        name="application-list-create",
-    ),
-    path(
-        "applications/<int:id>/",
-        ApplicationDetailAPIView.as_view(),
-        name="application-detail",
-    ),
+    path("applications/", ApplicationListCreateAPIView.as_view(), name="application-list-create"),
+    path("applications/<int:id>/", ApplicationDetailAPIView.as_view(), name="application-detail"),
 
-    path(
-        "interviews/",
-        InterviewListCreateAPIView.as_view(),
-        name="interview-list-create",
-    ),
-    path(
-        "interviews/<int:id>/",
-        InterviewDetailAPIView.as_view(),
-        name="interview-detail",
-    ),
+    path("interviews/", InterviewListCreateAPIView.as_view(), name="interview-list-create"),
+    path("interviews/<int:id>/", InterviewDetailAPIView.as_view(), name="interview-detail"),
 
-    path(
-        "selections/",
-        SelectionListCreateAPIView.as_view(),
-        name="selection-list-create",
-    ),
-    path(
-        "selections/<int:id>/",
-        SelectionDetailAPIView.as_view(),
-        name="selection-detail",
-    ),
-
-    path(
-        "notifications/",
-        NotificationListCreateAPIView.as_view(),
-        name="notification-list-create",
-    ),
-    path(
-        "notifications/<int:id>/read/",
-        NotificationMarkReadAPIView.as_view(),
-        name="notification-mark-read",
-    ),
-    path(
-        "dashboard/",
-        DashboardAPIView.as_view(),
-        name="dashboard",
-    ),
+    path("selections/", SelectionListCreateAPIView.as_view(), name="selection-list-create"),
+    path("selections/<int:id>/", SelectionDetailAPIView.as_view(), name="selection-detail"),
 ]
-
-
-  
