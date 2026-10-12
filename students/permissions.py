@@ -300,39 +300,6 @@ class SelectionPermission(BasePermission):
         return False
 
 
-class NotificationPermission(BasePermission):
-
-    def has_permission(self, request, view):
-
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        # Admin and Teacher
-        if request.user.groups.filter(
-            name__in=["Admin", "Teacher"]
-        ).exists():
-            return True
-
-        # Student can view notifications and mark them as read
-        if request.user.groups.filter(name="Student").exists():
-            return request.method in ["GET", "PATCH"]
-
-        return False
-
-
-class DashboardPermission(BasePermission):
-
-    def has_permission(self, request, view):
-
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        # Only Admin and Teacher can access the dashboard
-        return request.user.groups.filter(
-            name__in=["Admin", "Teacher"]
-        ).exists()
-
-
 class PlacementDrivePermission(BasePermission):
 
     def has_permission(self, request, view):
