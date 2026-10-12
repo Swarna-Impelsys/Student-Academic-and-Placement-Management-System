@@ -218,16 +218,22 @@ class CompanyPermission(BasePermission):
         return False
 
 
-class EligibilityPermission(BasePermission):
 
+class EligibilityPermission(BasePermission):
     def has_permission(self, request, view):
-        if not request.user.is_authenticated:
+        if not request.user or not request.user.is_authenticated:
             return False
 
         if request.method == "GET":
             return True
 
+        if request.method == "POST":
+            return request.user.groups.filter(
+                name__in=["Admin", "Teacher"]
+            ).exists()
+
         return False
+
 
 
 class ApplicationPermission(BasePermission):
@@ -256,6 +262,44 @@ class ApplicationPermission(BasePermission):
         return False
 
 
+class InterviewPermission(BasePermission):
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Admin and Teacher can manage interviews
+        if request.user.groups.filter(
+            name__in=["Admin", "Teacher"]
+        ).exists():
+            return True
+
+        # Student can view interviews
+        if request.user.groups.filter(name="Student").exists():
+            return request.method == "GET"
+
+        return False
+
+
+class SelectionPermission(BasePermission):
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Admin and Teacher can manage selections
+        if request.user.groups.filter(
+            name__in=["Admin", "Teacher"]
+        ).exists():
+            return True
+
+        # Student can only view selections
+        if request.user.groups.filter(name="Student").exists():
+            return request.method == "GET"
+
+        return False
+
+
 class PlacementDrivePermission(BasePermission):
 
     def has_permission(self, request, view):
@@ -266,12 +310,7 @@ class PlacementDrivePermission(BasePermission):
             return True
 
         if request.user.groups.filter(name="Teacher").exists():
-            return request.method in [
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH"
-            ]
+            return request.method in ["GET", "POST", "PUT", "PATCH"]
 
         if request.user.groups.filter(name="Student").exists():
             return request.method in SAFE_METHODS
@@ -289,12 +328,7 @@ class JobPermission(BasePermission):
             return True
 
         if request.user.groups.filter(name="Teacher").exists():
-            return request.method in [
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH"
-            ]
+            return request.method in ["GET", "POST", "PUT", "PATCH"]
 
         if request.user.groups.filter(name="Student").exists():
             return request.method in SAFE_METHODS

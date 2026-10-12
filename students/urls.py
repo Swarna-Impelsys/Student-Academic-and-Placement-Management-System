@@ -35,6 +35,10 @@ from .views import (
     CertificationDetailAPIView,
     CompanyListCreateAPIView,
     CompanyDetailAPIView,
+    InterviewListCreateAPIView,
+    InterviewDetailAPIView,
+    SelectionListCreateAPIView,
+    SelectionDetailAPIView
 )
 
 urlpatterns = [
@@ -61,25 +65,21 @@ urlpatterns = [
     ),
     path("courses/<int:id>/", CourseDetailAPIView.as_view(), name="course_detail"),
     path("students/active/", ActiveStudentsAPIView.as_view(), name="active_student"),
-    path(
-        "students/<int:id>/profile/update/",
-        StudentProfileAPIView.as_view(),
-        name="student_profile",
-    ),
+    
     path(
         "students/profile/",
         StudentProfileCreateAPIView.as_view(),
         name="student_profile_create",
     ),
     path(
-        "students/<int:id>/profile/update/",
-        StudentProfileUpdateAPIView.as_view(),
-        name="student_profile_update",
+        "students/<int:id>/profile/",
+        StudentProfileDetailAPIView.as_view(),
+        name="student_profile_Detail",
     ),
     path(
-        "students/<int:id>/profile/delete/",
-        StudentProfileDeleteAPIView.as_view(),
-        name="student_profile_delete",
+        "students/<int:id>/profile/list",
+        StudentProfileListAPIView.as_view(),
+        name="student_profile_list",
     ),
     path(
         "students/subject/<int:id>/",
@@ -147,25 +147,15 @@ urlpatterns = [
     path("jobs/", JobListCreateAPIView.as_view(), name="job-list-create"),
     path("jobs/<int:id>/", JobDetailAPIView.as_view(), name="job-detail"),
 
-    path(
-        "eligibility/check/",
-        EligibilityCheckAPIView.as_view(),
-        name="eligibility-check",
-    ),
-    path(
-        "eligibility/",
-        EligibilityCheckListAPIView.as_view(),
-        name="eligibility-list",
-    ),
+    path("eligibility/check/", EligibilityCheckAPIView.as_view(), name="eligibility-check"),
+    path("eligibility/", EligibilityCheckListAPIView.as_view(), name="eligibility-list"),
 
-    path(
-        "applications/",
-        ApplicationListCreateAPIView.as_view(),
-        name="application-list-create",
-    ),
-    path(
-        "applications/<int:id>/",
-        ApplicationDetailAPIView.as_view(),
-        name="application-detail",
-    ),
+    path("applications/", ApplicationListCreateAPIView.as_view(), name="application-list-create"),
+    path("applications/<int:id>/", ApplicationDetailAPIView.as_view(), name="application-detail"),
+
+    path("interviews/", InterviewListCreateAPIView.as_view(), name="interview-list-create"),
+    path("interviews/<int:id>/", InterviewDetailAPIView.as_view(), name="interview-detail"),
+
+    path("selections/", SelectionListCreateAPIView.as_view(), name="selection-list-create"),
+    path("selections/<int:id>/", SelectionDetailAPIView.as_view(), name="selection-detail"),
 ]

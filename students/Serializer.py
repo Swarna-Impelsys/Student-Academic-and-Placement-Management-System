@@ -1,5 +1,7 @@
+
 from .models import (
     Application,
+    Selection,
     Student,
     Course,
     StudentProfile,
@@ -11,7 +13,9 @@ from .models import (
     EligibilityCheck,
     Job,
     PlacementDrive,
+    Interview,
 )
+
 from rest_framework import serializers
 
 class SubjectSerializer(serializers.ModelSerializer): 
@@ -165,41 +169,6 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "address",
             "date_of_birth"
         ]
-
-    # custom validation(name field validation)
-    def validate_Name(self,value):
-        if len(value) < 3:
-            raise serializers.ValidationError("Name must be at least 3 characters")
-        return value
-
-    # custom validation( age field validation)
-    def validate_Age(self,value):
-        if value <= 18:
-            raise serializers.ValidationError("Age must be 18 or above")
-        return value
-
-    # custom validation(phone field validation)
-    def validate_Phone(self,value):
-        if len(str(value)) != 10:
-            raise serializers.ValidationError("Phone number must be 10 characters")
-        return value
-
-    # custom validation( age and course object validation)
-    def validate(self, attrs):
-        age = attrs.get("Age")
-        course = attrs.get("Course")
-
-        restricted_courses = [
-            "CEBA",
-            "HEBA"
-        ]
-
-        if age < 18 and course.name in restricted_courses:
-            raise serializers.ValidationError(
-                "Students below 18 cannot select this course."
-            )
-
-        return attrs
 
 class AcademicRecordSerializer(serializers.ModelSerializer):
     class Meta:
@@ -449,21 +418,119 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "updated_at"
         ]
 
+    
     def validate(self, data):
+        student = data.get(
+            "student",
+            getattr(self.instance, "student", None)
+        )
+        job = data.get(
+            "job",
+            getattr(self.instance, "job", None)
+        )
 
-        student = data["student"]
-        job = data["job"]
-
-        if Application.objects.filter(
-            student=student,
-            job=job
-        ).exists():
-            raise serializers.ValidationError(
-                "Student has already applied for this job."
+        if student and job:
+            existing = Application.objects.filter(
+                student=student,
+                job=job
             )
+
+            if self.instance:
+                existing = existing.exclude(
+                    pk=self.instance.pk
+                )
+
+            if existing.exists():
+                raise serializers.ValidationError(
+                    "Student has already applied for this job."
+                )
 
         return data
 
-    
 
-    
+class InterviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Interview
+
+        fields = [
+            "id",
+            "application",
+            "interview_date",
+            "interview_time",
+            "interview_type",
+            "location",
+            "meeting_link",
+            "status",
+            "feedback",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
+
+class SelectionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Selection
+
+        fields = [
+            "id",
+            "application",
+            "status",
+            "offer_date",
+            "joining_date",
+            "package",
+            "remarks",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
+
+    def validate(self, data):
+
+        status_value = data.get(
+            "status",
+            getattr(self.instance, "status", None)
+        )
+
+        package = data.get(
+            "package",
+            getattr(self.instance, "package", None)
+        )
+
+        joining_date = data.get(
+            "joining_date",
+            getattr(self.instance, "joining_date", None)
+        )
+
+        if status_value == "selected":
+
+            if package is None:
+                raise serializers.ValidationError(
+                    "Package is required for selected candidates."
+                )
+
+            if joining_date is None:
+                raise serializers.ValidationError(
+                    "Joining date is required for selected candidates."
+                )
+
+        if status_value == "rejected":
+
+            if package is not None:
+                raise serializers.ValidationError(
+                    "Rejected candidates cannot have a package."
+                )
+
+            if joining_date is not None:
+                raise serializers.ValidationError(
+                    "Rejected candidates cannot have a joining date."
+                )
+
+        return data
