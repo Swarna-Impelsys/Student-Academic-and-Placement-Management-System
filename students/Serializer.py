@@ -58,7 +58,6 @@ class CertificationSerializer(serializers.ModelSerializer):
             )
 
         return value
-    
     def validate(self, attrs):
         issue_date = attrs.get(
             "issue_date",
@@ -212,7 +211,6 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "date_of_birth"
         ]
 
-    
 class AcademicRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -638,8 +636,4 @@ class AuditLogSerializer(serializers.ModelSerializer):
             "record_id",
             "description",
             "timestamp",
-        ]
-
-    
-
-    
+        ]   

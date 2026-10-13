@@ -101,7 +101,6 @@ class logoutAPIView(APIView):
                 {"error": "Invalid refresh token"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
 # creating class for listcreateAPI
 class StudentListCreateAPIView(APIView):
 
