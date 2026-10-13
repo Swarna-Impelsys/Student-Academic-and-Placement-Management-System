@@ -1,4 +1,4 @@
-from .models import Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company
+from .models import Application, Student,Course,StudentProfile,Subject,AcademicRecord,Skill,Certification, Company,EligibilityCheck,Job,PlacementDrive
 from rest_framework import serializers
 
 class SubjectSerializer(serializers.ModelSerializer): 
@@ -253,11 +253,181 @@ class CompanySerializer(serializers.ModelSerializer):
 
         return attrs
 
+class EligibilityCheckSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = EligibilityCheck
 
+        fields = [
+            "id",
+            "student",
+            "job",
+            "is_eligible",
+            "reason",
+            "checked_at",
+        ]
 
+        read_only_fields = [
+            "id",
+            "is_eligible",
+            "reason",
+            "checked_at",
+        ]
 
+class JobSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Job
 
+        fields = [
+            "id",
+            "placement_drive",
+            "title",
+            "description",
+            "job_type",
+            "location",
+            "salary",
+            "vacancies",
+            "minimum_age",
+            "minimum_marks",
+            "minimum_attendance",
+            "required_course",
+            "required_skills",
+            "maximum_backlogs",
+            "is_active",
+            "created_at",
+        ]
 
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
 
+    def validate_title(self, value):
+        value = value.strip()
+
+        if len(value) < 3:
+            raise serializers.ValidationError(
+                "Job title must be at least 3 characters."
+            )
+
+        return value
+
+    def validate_salary(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                "Salary must be greater than 0."
+            )
+
+        return value
+
+    def validate_vacancies(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                "Vacancies must be greater than 0."
+            )
+
+        return value
+
+    def validate_minimum_age(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError(
+                "Minimum age must be greater than 0."
+            )
+
+        return value
+
+    def validate_minimum_marks(self, value):
+        if value is not None and (value < 0 or value > 100):
+            raise serializers.ValidationError(
+                "Minimum marks must be between 0 and 100."
+            )
+
+        return value
+
+    def validate_minimum_attendance(self, value):
+        if value is not None and (value < 0 or value > 100):
+            raise serializers.ValidationError(
+                "Minimum attendance must be between 0 and 100."
+            )
+
+        return value
+
+    def validate_maximum_backlogs(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                "Maximum backlogs cannot be negative."
+            )
+
+        return value
+
+class PlacementDriveSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PlacementDrive
+        fields = [
+            "id",
+            "company",
+            "title",
+            "description",
+            "drive_date",
+            "application_start_date",
+            "application_end_date",
+            "location",
+            "is_active",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+
+    def validate_title(self, value):
+        value = value.strip()
+
+        if len(value) < 3:
+            raise serializers.ValidationError(
+                "Placement drive title must be at least 3 characters."
+            )
+
+        return value
+        read_only_fields = [
+            "id",
+        ]
+
+class ApplicationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Application
+
+        fields = [
+            "id",
+            "student",
+            "job",
+            "status",
+            "applied_at",
+            "updated_at"
+        ]
+
+        read_only_fields = [
+            "id",
+            "status",
+            "applied_at",
+            "updated_at"
+        ]
+
+    def validate(self, data):
+
+        student = data["student"]
+        job = data["job"]
+
+        if Application.objects.filter(
+            student=student,
+            job=job
+        ).exists():
+            raise serializers.ValidationError(
+                "Student has already applied for this job."
+            )
+
+        return data
+
+    
+
+    

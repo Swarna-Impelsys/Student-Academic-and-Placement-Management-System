@@ -1,6 +1,13 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView 
 from .views import(
+    
+    ApplicationDetailAPIView,
+    EligibilityCheckAPIView,
+    EligibilityCheckListAPIView,
+    JobDetailAPIView,
+    JobListCreateAPIView,
+    PlacementDriveListCreateAPIView,
     loginAPIView,
     StudentListCreateAPIView,
     StudentDetailAPIView,
@@ -24,7 +31,14 @@ from .views import(
     CertificationListCreateAPIView,
     CertificationDetailAPIView,
     CompanyListCreateAPIView,
-    CompanyDetailAPIView
+    CompanyDetailAPIView,
+    PlacementDriveDetailAPIView,
+    JobListCreateAPIView,
+    JobDetailAPIView,
+    PlacementDriveListCreateAPIView,
+    PlacementDriveDetailAPIView,
+    EligibilityCheckAPIView,
+    ApplicationListCreateAPIView
 
 )
 urlpatterns = [
@@ -53,8 +67,14 @@ urlpatterns = [
     path("certifications/<int:id>/",CertificationDetailAPIView.as_view(),name="certification-detail"),
     path("companies/", CompanyListCreateAPIView.as_view(), name="company-list-create"),
     path("companies/<int:id>/", CompanyDetailAPIView.as_view(),name="company-detail"),
-
-
+    path("placement-drives/", PlacementDriveListCreateAPIView.as_view(), name="placement-drive-list-create"),
+    path("placement-drives/<int:id>/", PlacementDriveDetailAPIView.as_view(), name="placement-drive-detail"),
+    path("jobs/", JobListCreateAPIView.as_view(), name="job-list-create"),
+    path("jobs/<int:id>/", JobDetailAPIView.as_view(), name="job-detail"),
+    path("eligibility/check/", EligibilityCheckAPIView.as_view(), name="eligibility-check"),
+    path("eligibility/",EligibilityCheckListAPIView.as_view(),name="eligibility-list"),
+    path("applications/", ApplicationListCreateAPIView.as_view(), name="application-list-create"),
+    path("applications/<int:id>/",ApplicationDetailAPIView.as_view(),name="application-detail"),
 
 ]
 

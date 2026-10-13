@@ -229,3 +229,41 @@ class CompanyPermission(BasePermission):
             return request.method in SAFE_METHODS
 
         return False
+
+class EligibilityPermission(BasePermission):
+
+    def has_permission(self, request, view):
+
+        if not request.user.is_authenticated:
+            return False
+
+        if request.method == "GET":
+            return True
+
+        return False
+
+class ApplicationPermission(BasePermission):
+
+    def has_permission(self, request, view):
+
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.groups.filter(name="Admin").exists():
+            return True
+
+        if request.user.groups.filter(name="Teacher").exists():
+            return request.method in [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH"
+            ]
+
+        if request.user.groups.filter(name="Student").exists():
+            return request.method in [
+                "GET",
+                "POST"
+            ]
+
+        return False
