@@ -1,0 +1,90 @@
+
+/* Students page */
+.students-page {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Table wrapper */
+.students-page .table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Students table alignment */
+.students-table {
+    width: 100%;
+    min-width: 750px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+/* Column widths */
+.students-table th:nth-child(1),
+.students-table td:nth-child(1) {
+    width: 7%;
+}
+
+.students-table th:nth-child(2),
+.students-table td:nth-child(2) {
+    width: 20%;
+}
+
+.students-table th:nth-child(3),
+.students-table td:nth-child(3) {
+    width: 27%;
+}
+
+.students-table th:nth-child(4),
+.students-table td:nth-child(4) {
+    width: 8%;
+}
+
+.students-table th:nth-child(5),
+.students-table td:nth-child(5) {
+    width: 18%;
+}
+
+.students-table th:nth-child(6),
+.students-table td:nth-child(6) {
+    width: 20%;
+}
+
+/* Header and data cells */
+.students-table th,
+.students-table td {
+    padding: 14px 16px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Header */
+.students-table th {
+    white-space: nowrap;
+}
+
+/* Prevent long email addresses from breaking the table */
+.students-table td:nth-child(3) {
+    overflow-wrap: anywhere;
+}
+
+/* Keep ID, age, and phone values on one line */
+.students-table td:nth-child(1),
+.students-table td:nth-child(4),
+.students-table td:nth-child(5) {
+    white-space: nowrap;
+}
+
+/* Mobile screens */
+@media (max-width: 768px) {
+    .students-table {
+        min-width: 750px;
+    }
+
+    .students-table th,
+    .students-table td {
+        padding: 12px;
+    }
+}

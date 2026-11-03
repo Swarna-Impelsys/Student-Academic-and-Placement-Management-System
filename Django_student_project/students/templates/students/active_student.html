@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Active students</title>
+    </head>
+    <body>
+        <h1>Active Students</h1>
+        {% for student in students %}
+        <p>Name:{{student.name}}</p>
+        <p> Status:{{student.get_status_display}}</p>
+        <hr>
+        {% empty %}
+
+        <p> No Active students Found</p>
+        {% endfor %}
+    </body>
+</html>

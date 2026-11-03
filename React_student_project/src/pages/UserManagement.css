@@ -1,0 +1,513 @@
+
+/* =========================================
+   USER MANAGEMENT - MAIN PAGE
+========================================= */
+
+.user-management {
+    width: 100%;
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 24px;
+    box-sizing: border-box;
+    color: #263445;
+    font-family: Arial, sans-serif;
+}
+
+.user-management h2 {
+    margin: 0 0 8px;
+    color: #1e293b;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.user-management > p {
+    margin: 0 0 22px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* =========================================
+   SUCCESS AND ERROR MESSAGES
+========================================= */
+
+.user-management > p[role="status"],
+.user-management > p[role="alert"] {
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.user-management > p[role="status"] {
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+}
+
+.user-management > p[role="alert"] {
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+}
+
+/* =========================================
+   CREATE USER ACCOUNT SECTION
+========================================= */
+
+.create-user-section {
+    background: #ffffff;
+    padding: 24px;
+    margin-bottom: 26px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.create-user-section h3 {
+    margin: 0 0 8px;
+    color: #1e293b;
+    font-size: 19px;
+}
+
+.create-user-section > p {
+    margin: 0 0 20px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.create-user-section form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: end;
+}
+
+.create-user-section form > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.create-user-section label {
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.create-user-section input,
+.create-user-section select {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    padding: 9px 12px;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 14px;
+    outline: none;
+}
+
+.create-user-section input:focus,
+.create-user-section select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.create-user-section input:disabled,
+.create-user-section select:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
+
+.create-user-section form > button {
+    min-height: 42px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.create-user-section form > button:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.create-user-section form > button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.create-user-section form > div > p {
+    margin: 7px 0 0;
+    color: #dc2626;
+    font-size: 12px;
+}
+
+/* Student selection field */
+.create-user-section form > div:has(#student_id) {
+    grid-column: 1 / -1;
+    max-width: 450px;
+}
+
+/* =========================================
+   ACTIVE / ARCHIVED TABS
+========================================= */
+
+.user-management-tabs {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.user-management-tabs button {
+    padding: 11px 20px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-management-tabs button:hover:not(:disabled) {
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
+.user-management-tabs button.active-tab {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+.user-management-tabs button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   USER LIST SECTION
+========================================= */
+
+.user-management-list {
+    width: 100%;
+    min-width: 0;
+    padding: 22px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.user-management-list h3 {
+    margin: 0 0 20px;
+    color: #1e293b;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.user-management-list > p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* =========================================
+   TABLE ALIGNMENT
+========================================= */
+
+.user-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.user-table-wrapper table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: #ffffff;
+}
+
+.user-table-wrapper th,
+.user-table-wrapper td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+/* Table headings */
+
+.user-table-wrapper th {
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Table data */
+
+.user-table-wrapper td {
+    color: #475569;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.user-table-wrapper tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.user-table-wrapper tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* =========================================
+   ACTIVE USERS TABLE COLUMN WIDTHS
+========================================= */
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper table {
+    min-width: 850px;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper th:nth-child(1),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper td:nth-child(1) {
+    width: 7%;
+    text-align: center;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper th:nth-child(2),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper td:nth-child(2) {
+    width: 19%;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper th:nth-child(3),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper td:nth-child(3) {
+    width: 29%;
+    overflow-wrap: anywhere;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper th:nth-child(4),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper td:nth-child(4) {
+    width: 18%;
+    text-align: center;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper th:nth-child(5),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper td:nth-child(5) {
+    width: 12%;
+    text-align: center;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper th:nth-child(6),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(6):last-child)
+.user-table-wrapper td:nth-child(6) {
+    width: 15%;
+    text-align: center;
+}
+
+/* =========================================
+   ARCHIVED USERS TABLE
+========================================= */
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper table {
+    min-width: 1250px;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(1),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(1) {
+    width: 5%;
+    text-align: center;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(2),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(2) {
+    width: 11%;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(3),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(3) {
+    width: 16%;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(4),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(4) {
+    width: 12%;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(5),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(5) {
+    width: 8%;
+    text-align: center;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(6),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(6) {
+    width: 14%;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(7),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(7) {
+    width: 14%;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(8),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(8) {
+    width: 12%;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper th:nth-child(9),
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td:nth-child(9) {
+    width: 8%;
+    text-align: center;
+}
+
+/* =========================================
+   STATUS TEXT
+========================================= */
+
+.user-table-wrapper td:nth-child(5) {
+    font-weight: 600;
+}
+
+/* =========================================
+   ARCHIVE / RESTORE BUTTONS
+========================================= */
+
+.user-table-wrapper td button {
+    min-width: 85px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.user-table-wrapper td button:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td button {
+    background: #16a34a;
+}
+
+.user-management-list:has(.user-table-wrapper table thead th:nth-child(9))
+.user-table-wrapper td button:hover:not(:disabled) {
+    background: #15803d;
+}
+
+.user-table-wrapper td button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 900px) {
+    .user-management {
+        padding: 16px;
+    }
+
+    .create-user-section form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .user-management-list {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .user-management {
+        margin: 15px auto;
+        padding: 10px;
+    }
+
+    .user-management h2 {
+        font-size: 22px;
+    }
+
+    .create-user-section {
+        padding: 16px;
+    }
+
+    .create-user-section form {
+        grid-template-columns: 1fr;
+    }
+
+    .create-user-section form > div:has(#student_id) {
+        max-width: none;
+    }
+
+    .user-management-tabs {
+        gap: 8px;
+    }
+
+    .user-management-tabs button {
+        flex: 1;
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .user-management-list {
+        padding: 12px;
+    }
+
+    .user-management-list h3 {
+        font-size: 17px;
+    }
+}

@@ -1,0 +1,328 @@
+
+/* =====================================
+   MAIN COURSES PAGE
+===================================== */
+
+.courses-page {
+    width: 100%;
+    max-width: 1250px;
+    margin: 30px auto;
+    padding: 24px;
+    box-sizing: border-box;
+    color: #263445;
+}
+
+.courses-page h1 {
+    margin-bottom: 10px;
+    font-size: 28px;
+    color: #24364b;
+}
+
+.courses-page > p {
+    margin-bottom: 24px;
+    color: #687789;
+    line-height: 1.6;
+}
+
+/* =====================================
+   ADD / EDIT COURSE FORM
+===================================== */
+
+.courses-page > form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.courses-page > form label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.courses-page > form input {
+    width: 280px;
+    min-width: 220px;
+    padding: 11px 13px;
+    border: 1px solid #ccd5df;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.courses-page input:focus,
+.courses-page select:focus {
+    outline: none;
+    border-color: #3478c7;
+    box-shadow: 0 0 0 2px rgba(52, 120, 199, 0.12);
+}
+
+/* =====================================
+   GENERAL BUTTONS
+===================================== */
+
+.courses-page button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.courses-page button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =====================================
+   MAIN COURSE TABLE
+===================================== */
+
+.courses-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 24px;
+    border: 1px solid #dce3eb;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.courses-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Column widths */
+
+.courses-table th:nth-child(1),
+.courses-table td:nth-child(1) {
+    width: 8%;
+    text-align: center;
+}
+
+.courses-table th:nth-child(2),
+.courses-table td:nth-child(2) {
+    width: 25%;
+    text-align: left;
+}
+
+.courses-table th:nth-child(3),
+.courses-table td:nth-child(3) {
+    width: 20%;
+    text-align: center;
+}
+
+.courses-table th:nth-child(4),
+.courses-table td:nth-child(4) {
+    width: 47%;
+    text-align: center;
+}
+
+/* Table headings */
+
+.courses-table thead th {
+    padding: 16px 14px;
+    background: #edf2f8;
+    color: #263b53;
+    font-size: 14px;
+    font-weight: 700;
+    border-bottom: 1px solid #dce3eb;
+}
+
+/* Table rows */
+
+.courses-table tbody td {
+    padding: 18px 14px;
+    border-bottom: 1px solid #e8edf2;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.courses-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.courses-table tbody tr:hover {
+    background: #f7f9fc;
+}
+
+.course-id,
+.course-student-count {
+    font-weight: 600;
+    color: #46566a;
+}
+
+.course-name {
+    font-weight: 600;
+    color: #263b53;
+    overflow-wrap: anywhere;
+}
+
+/* =====================================
+   COURSE ACTION BUTTONS
+===================================== */
+
+.course-action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+}
+
+.course-action-buttons button {
+    min-width: 105px;
+    padding: 10px 12px;
+    white-space: nowrap;
+}
+
+.course-edit-btn {
+    background: #e5efff;
+    color: #245ca5;
+}
+
+.course-edit-btn:hover {
+    background: #cfe0fb;
+}
+
+.course-view-btn {
+    background: #e5f5ed;
+    color: #24744b;
+}
+
+.course-view-btn:hover {
+    background: #ccebd9;
+}
+
+.course-teacher-btn {
+    background: #f0e9ff;
+    color: #6843a5;
+}
+
+.course-teacher-btn:hover {
+    background: #dfd2fa;
+}
+
+/* =====================================
+   STUDENTS AND TEACHER PANELS
+===================================== */
+
+.courses-page section {
+    margin-top: 30px;
+    padding: 24px;
+    border: 1px solid #dce3eb;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.courses-page section h2 {
+    margin: 0 0 18px;
+    color: #263b53;
+    font-size: 20px;
+}
+
+.courses-page section h3 {
+    margin: 24px 0 14px;
+    color: #344b64;
+    font-size: 16px;
+}
+
+/* Panel forms */
+
+.courses-page section form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 14px 0 20px;
+}
+
+.courses-page section form label {
+    font-weight: 600;
+}
+
+.courses-page section form select {
+    width: 100%;
+    max-width: 450px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #ccd5df;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 14px;
+}
+
+/* Student table */
+
+.courses-page section table {
+    width: 100%;
+    min-width: 650px;
+    margin-top: 18px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.courses-page section th,
+.courses-page section td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e8edf2;
+    overflow-wrap: anywhere;
+}
+
+.courses-page section th {
+    background: #edf2f8;
+    color: #263b53;
+    font-weight: 700;
+}
+
+.courses-page section tbody tr:hover {
+    background: #f7f9fc;
+}
+
+.courses-page section ul {
+    padding-left: 22px;
+    line-height: 2;
+}
+
+/* =====================================
+   RESPONSIVE LAYOUT
+===================================== */
+
+@media (max-width: 768px) {
+    .courses-page {
+        padding: 14px;
+    }
+
+    .courses-page h1 {
+        font-size: 23px;
+    }
+
+    .courses-page > form {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .courses-page > form input {
+        width: 100%;
+    }
+
+    .course-action-buttons {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .courses-page section {
+        padding: 16px;
+        overflow-x: auto;
+    }
+
+    .courses-page section form select {
+        max-width: 100%;
+    }
+}

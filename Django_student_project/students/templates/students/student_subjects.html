@@ -1,0 +1,19 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+    <title>Student Subjects</title> 
+</head> 
+<body> 
+ 
+    <h1>{{ student.name }}</h1> 
+ 
+    <h2>Subjects</h2> 
+ 
+    {% for subject in subjects %} 
+        <p>{{ subject.name }}</p> 
+    {% empty %} 
+        <p>No subjects assigned.</p> 
+    {% endfor %} 
+ 
+</body> 
+</html> 

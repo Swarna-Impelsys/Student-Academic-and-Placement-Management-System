@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Student by course</title>
+    </head>
+    <body>
+        <h1>course:{{course.name}}></course></h1>
+        <h2>Students</h2>
+        {% for student in students %}
+        <p>name:{{student.name}}</p>
+        <p>Age:{{student.Age}}</p>
+        <p>Email:{{student.Email}} </p>
+        <p>Phone:{{student.Phone}}</p>
+        <hr>
+        {%empty%}
+        <p>No student found on this course</p>
+        {% endfor %}
+    </body>
+</html>

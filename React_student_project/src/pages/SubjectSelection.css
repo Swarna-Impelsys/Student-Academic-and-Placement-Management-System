@@ -1,0 +1,175 @@
+
+/* =====================================
+   SUBJECT SELECTION PAGE
+===================================== */
+
+.subject-selection-card {
+    width: 100%;
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 30px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e5eaf0;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(30, 50, 80, 0.07);
+    color: #263445;
+}
+
+/* Main heading */
+.subject-selection-card h2 {
+    margin: 0 0 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e8edf3;
+    color: #24364b;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+/* Course and selection information */
+.subject-selection-card > p {
+    margin: 12px 0;
+    color: #526174;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.subject-selection-card > p strong {
+    color: #263445;
+    font-weight: 600;
+}
+
+/* Section headings */
+.subject-selection-card h3 {
+    margin: 30px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e8edf3;
+    color: #24364b;
+    font-size: 19px;
+    font-weight: 650;
+}
+
+/* Subject options */
+.subject-selection-card .subject-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 12px 12px 0;
+    padding: 12px 16px;
+    min-width: 150px;
+    background: #f8fafc;
+    border: 1px solid #dce4ed;
+    border-radius: 10px;
+    color: #34445a;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.subject-selection-card .subject-option:hover {
+    background: #eef5ff;
+    border-color: #8bb8f5;
+}
+
+.subject-selection-card .subject-option input {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: #2563eb;
+    cursor: pointer;
+}
+
+.subject-selection-card .subject-option input:disabled {
+    cursor: not-allowed;
+}
+
+/* Save button */
+.subject-selection-card .btn-primary {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 9px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.subject-selection-card .btn-primary:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.subject-selection-card .btn-primary:disabled {
+    background: #9caec8;
+    cursor: not-allowed;
+}
+
+/* Success and error messages */
+.subject-selection-card .alert {
+    margin: 18px 0;
+    padding: 13px 16px;
+    border-radius: 9px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.subject-selection-card .alert-error {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #be123c;
+}
+
+.subject-selection-card .alert-success {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #047857;
+}
+
+/* Saved selection */
+.subject-selection-card h3:last-of-type ~ p {
+    margin: 8px 0;
+    padding: 12px 15px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #34445a;
+}
+
+/* Loading and empty messages */
+.subject-selection-card > p[role="status"] {
+    padding: 12px 15px;
+    background: #eff6ff;
+    border-radius: 8px;
+    color: #1d4ed8;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+    .subject-selection-card {
+        margin: 16px auto;
+        padding: 20px 16px;
+    }
+
+    .subject-selection-card h2 {
+        font-size: 22px;
+    }
+
+    .subject-selection-card h3 {
+        font-size: 17px;
+    }
+
+    .subject-selection-card .subject-option {
+        display: flex;
+        width: 100%;
+        box-sizing: border-box;
+        margin-right: 0;
+    }
+
+    .subject-selection-card .btn-primary {
+        width: 100%;
+    }
+}

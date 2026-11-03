@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+        <title> Student List </title>
+    </head>
+    <body> 
+        <h1>STUDENT MANAGEMENT SYSTEM </h1>
+        <h2> Students</h2>
+        <a href="{% url 'add_student_form'%}">Add Student</a>
+        <hr> 
+        {% for student in student %}
+        <p> Name:{{student.name}}</p>
+        <p> Age:{{student.Age}}</p>
+        <p> Email:{{student.Email}}</p>
+        <p> phone:{{student.Phone}}</p>
+        <p> Course:{{student.Course.name}}</p>
+
+        {% if student.Image %}
+    <img src="{{ student.Image.url }}" alt="{{ student.name }}" width="150">
+{% endif %}
+        
+        <a href="{% url 'update_student_form' student.id %}">Update Student</a>
+        <a href="{% url 'delete_student_form' student.id %}">Delete Student</a>
+        <hr>
+
+        {% empty %}
+        <p> No students found.</p>
+        {% endfor %}
+
+    </body>
+</html>

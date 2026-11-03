@@ -1,0 +1,116 @@
+
+/* Main Subject Configuration page */
+.card:has(.subject-config-layout) {
+    width: 100%;
+}
+
+/* Keep page content aligned vertically */
+.subject-config-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Common section spacing */
+.subject-config-section {
+    width: 100%;
+    padding: 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+/* Section headings */
+.subject-config-section h3 {
+    margin: 0 0 16px;
+}
+
+/* Form alignment */
+.subject-config-section form {
+    width: 100%;
+    max-width: 600px;
+}
+
+.subject-config-section .form-group {
+    width: 100%;
+}
+
+/* Course and subject lists */
+.subject-config-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.subject-config-list p {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+/* Assigned subject categories */
+.subject-config-category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.subject-config-category-card {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.subject-config-category-card h4 {
+    margin: 0 0 12px;
+}
+
+.subject-config-category-card p {
+    margin: 8px 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* Selection rule alignment */
+.subject-config-rule-card {
+    width: 100%;
+    padding: 16px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.subject-config-rule-card:last-child {
+    border-bottom: none;
+}
+
+.subject-config-rule-edit {
+    max-width: 600px;
+    margin-top: 16px;
+}
+
+/* Buttons */
+.subject-config-section button {
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+/* Tablet and mobile alignment */
+@media (max-width: 768px) {
+    .subject-config-category-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .subject-config-category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .subject-config-section {
+        padding: 12px;
+    }
+
+    .subject-config-section form {
+        max-width: 100%;
+    }
+}
