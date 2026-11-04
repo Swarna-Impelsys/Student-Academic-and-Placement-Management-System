@@ -1,0 +1,50 @@
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Django local databases
+*.sqlite3
+*.sqlite3-journal
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Media and uploaded documents
+media/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test and cache files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local backup folders
+students_backup/
+students_backup_final/
+*_backup/
+*_backup.json
+*_backup.sqlite3
+db_backup*
+db_sqlite_backup*
+
+# Local test files
+ocr_test.png
+test_document.pdf
+sqlite_data.json
+eligibility_checks_backup.json
+
+# Duplicate nested project folder
+/DRF_student_project/
