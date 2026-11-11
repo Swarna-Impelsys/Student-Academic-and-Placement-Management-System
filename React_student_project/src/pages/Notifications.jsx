@@ -318,9 +318,12 @@ function Notifications() {
             <div className="notifications-list">
 
                 {notifications.map((notification) => {
+                    const isInterviewNotification =
+                    notification.notification_type === 'interview';
+
                     const isJobNotification = Boolean(
-                        notification.job && notification.job_title
-                    );
+                         notification.job && notification.job_title
+                        ) && !isInterviewNotification;
 
                     const isExpanded =
                         expandedId === notification.id;
@@ -348,10 +351,12 @@ function Notifications() {
 
                                     <div className="notification-type-row">
                                         <span className="notification-type">
-                                            {isJobNotification
-                                                ? 'Job Opportunity'
-                                                : (notification.notification_type || 'Notification')}
-                                        </span>
+                                            {isInterviewNotification
+                                            ? 'Interview'
+                                            : isJobNotification
+                                             ? 'Job Opportunity'
+                                             : (notification.notification_type || 'Notification')}
+                                             </span>
 
                                         {!notification.is_read && (
                                             <span className="notification-new-badge">
@@ -372,19 +377,16 @@ function Notifications() {
 
                                 <div className="notification-card-actions">
 
-                                    {isJobNotification && (
+                                    {(isJobNotification || isInterviewNotification) && (
                                         <button
                                             type="button"
                                             className="notification-view-btn"
-                                            onClick={() =>
-                                                handleOpenNotification(notification)
-                                            }
+                                            onClick={() => handleOpenNotification(notification)}
                                         >
-                                            {isExpanded
-                                                ? 'Hide Details'
-                                                : 'View Details'}
+                                            {isExpanded ? 'Hide Details' : 'View Details'}
                                         </button>
                                     )}
+
 
                                     {notification.is_read ? (
                                         <span className="notification-read-label">
@@ -656,6 +658,118 @@ function Notifications() {
                                         )}
 
                                     </div>
+
+                                </div>
+                            )}
+
+                            {/* Expanded Interview Details */}
+                            {isInterviewNotification && isExpanded && (
+                                <div className="notification-job-card">
+
+                                    <div className="notification-job-header">
+                                        <div>
+                                            <span className="notification-job-label">
+                                                INTERVIEW DETAILS
+                                            </span>
+
+                                            <h3>
+                                                {notification.job_title || 'Interview'}
+                                            </h3>
+
+                                            <p className="notification-company-name">
+                                                {notification.company_name || 'Company not specified'}
+                                            </p>
+                                        </div>
+
+                                        <span className="notification-type">
+                                            {notification.interview_status || 'Scheduled'}
+                                        </span>
+                                    </div>
+
+                                    <div className="notification-job-section">
+                                        <h4>Interview Information</h4>
+
+                                        <div className="notification-job-info">
+
+                                            <div className="notification-info-item">
+                                                <span>Job Role</span>
+                                                <strong>
+                                                    {notification.job_title || '—'}
+                                                </strong>
+                                            </div>
+
+                                            <div className="notification-info-item">
+                                                <span>Company</span>
+                                                <strong>
+                                                    {notification.company_name || '—'}
+                                                </strong>
+                                            </div>
+
+                                            <div className="notification-info-item">
+                                                <span>Interview Date</span>
+                                                <strong>
+                                                    {formatDeadline(notification.interview_date)}
+                                                </strong>
+                                            </div>
+
+                                            <div className="notification-info-item">
+                                                <span>Interview Time</span>
+                                                <strong>
+                                                    {notification.interview_time || 'Not specified'}
+                                                </strong>
+                                            </div>
+
+                                            <div className="notification-info-item">
+                                                <span>Interview Mode</span>
+                                                <strong>
+                                                    {notification.interview_type
+                                                        ? notification.interview_type.charAt(0).toUpperCase() +
+                                                          notification.interview_type.slice(1)
+                                                        : 'Not specified'}
+                                                </strong>
+                                            </div>
+
+                                            <div className="notification-info-item">
+                                                <span>Interview Status</span>
+                                                <strong>
+                                                    {notification.interview_status || 'Not specified'}
+                                                </strong>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    {/* Online Interview */}
+                                    {notification.interview_type === 'online' && (
+                                        <div className="notification-job-section">
+                                            <h4>Online Meeting</h4>
+
+                                            {notification.meeting_link ? (
+                                                <a
+                                                    href={notification.meeting_link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="notification-company-link"
+                                                >
+                                                    Join Interview Meeting ↗
+                                                </a>
+                                            ) : (
+                                                <p>Meeting link not available.</p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Offline Interview */}
+                                    {notification.interview_type === 'offline' && (
+                                        <div className="notification-job-section">
+                                            <h4>Interview Location</h4>
+
+                                            <p>
+                                                {notification.interview_location ||
+                                                    'Interview location not specified.'}
+                                            </p>
+                                        </div>
+                                    )}
 
                                 </div>
                             )}

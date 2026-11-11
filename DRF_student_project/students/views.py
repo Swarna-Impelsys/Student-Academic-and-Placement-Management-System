@@ -25,6 +25,7 @@ from rest_framework.throttling import AnonRateThrottle
 from .models import  AccountInvitation, ArchivedUser
 from .tasks import send_account_invitation_task
 from django.db import transaction
+from django.contrib.auth import get_user_model
 
 from .ocr_utils import (
     extract_text_from_image,
@@ -41,6 +42,7 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -909,9 +911,8 @@ class ActiveStudentsAPIView(APIView):
 
         return Response(serializer.data)
 
+
 # get Student Profile
-
-
 class StudentProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -2415,7 +2416,7 @@ class NotificationListCreateAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        from django.contrib.auth import get_user_model
+        
         User = get_user_model()
 
         recipient = User.objects.filter(id=user_id).first()
@@ -2725,17 +2726,29 @@ class InterviewListCreateAPIView(APIView):
             interview = serializer.save()
 
             # AUTOMATIC NOTIFICATION
+            # AUTOMATIC INTERVIEW NOTIFICATION
             student_user = interview.application.student.user
+
             if student_user is not None:
+                interview_mode = interview.interview_type.title()
+
+                if interview.interview_type == "online":
+                    interview_details = f"Meeting Link: {interview.meeting_link}"
+                else:
+                    interview_details = f"Location: {interview.location}"
+
                 Notification.objects.create(
                     user=student_user,
                     notification_type="interview",
+                    interview=interview,
                     message=(
-                        f"Your interview for "
-                        f"{interview.application.job.title} "
-                        f"has been scheduled on "
-                        f"{interview.interview_date} "
-                        f"at {interview.interview_time}."
+                        f"Interview Scheduled!\n"
+                        f"Company/Job: {interview.application.job.title}\n"
+                        f"Interview Date: {interview.interview_date}\n"
+                        f"Interview Time: {interview.interview_time}\n"
+                        f"Interview Mode: {interview_mode}\n"
+                        f"{interview_details}\n"
+                        f"Please be available at the scheduled time."
                     )
                 )
 
