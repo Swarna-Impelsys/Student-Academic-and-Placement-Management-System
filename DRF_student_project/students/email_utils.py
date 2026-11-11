@@ -28,11 +28,13 @@ def send_account_invitation(user):
     message = (
         f"Hello {user.username},\n\n"
         "Your account has been created.\n"
+        f"Username: {user.username}\n"
         "Use the link below to set your password:\n\n"
         f"{setup_url}\n\n"
         "This link is time-limited. If you did not expect "
         "this invitation, please contact your administrator."
     )
+    
 
     return send_mail(
         subject=subject,

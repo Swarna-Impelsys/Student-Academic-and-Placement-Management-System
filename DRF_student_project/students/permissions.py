@@ -416,14 +416,48 @@ class ApplicationPermission(BasePermission):
 
 # ---------- Interview ----------
 
+
 class InterviewPermission(BasePermission):
+
     def has_permission(self, request, view):
+
         if not request.user or not request.user.is_authenticated:
             return False
 
+        # Get the user's Django groups
+        groups = list(
+            request.user.groups.values_list("name", flat=True)
+        )
+
+        # DEBUG INFORMATION
+        print("========== INTERVIEW PERMISSION DEBUG ==========")
+
+        print("USER:", request.user.username)
+        print("AUTHENTICATED:", request.user.is_authenticated)
+        print("USERNAME:", request.user.username)
+        print("METHOD:", request.method)
+        print("GROUPS:", groups)
+
+        print("IS ADMIN:", is_admin(request.user))
+
+        print(
+            "IN ALLOWED GROUP:",
+            in_group(
+                request.user,
+                "Teacher",
+                "Student",
+                "Registration Officer"
+            )
+        )
+
+        print("================================================")
+
+        # Admin can access all interview operations
         if is_admin(request.user):
             return True
 
+        # Teacher, Student and Registration Officer
+        # can perform read-only operations
         return (
             request.method in SAFE_METHODS
             and in_group(

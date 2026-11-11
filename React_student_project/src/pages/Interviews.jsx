@@ -33,9 +33,11 @@ function getList(data, key) {
 
 function Interviews() {
     // Role-based UI permissions
-    const role = localStorage.getItem('role');
-    const canManageInterviews = role === 'Admin';
-    const isRegistrationOfficer = role === 'Registration Officer';
+    const role = localStorage.getItem('role')?.trim().toLowerCase();
+
+    const canManageInterviews = role === 'admin';
+    const isRegistrationOfficer = role === 'registration officer';
+    const isStudent = role === 'student';
 
     const [interviews, setInterviews] = useState([]);
     const [applications, setApplications] = useState([]);
@@ -58,6 +60,7 @@ function Interviews() {
     const [sendingUploadId, setSendingUploadId] = useState(null);
     const [selectedInterviewIds, setSelectedInterviewIds] = useState({});
 
+    // Load interviews and related data
     async function loadData() {
         setLoading(true);
         setError('');
@@ -72,8 +75,14 @@ function Interviews() {
             ] = await Promise.all([
                 getInterviews(),
                 getApplications(),
-                getStudents(),
+
+                // Students must not fetch the complete student list.
+                isStudent
+                    ? Promise.resolve([])
+                    : getStudents(),
+
                 getJobs(),
+
                 canManageInterviews || isRegistrationOfficer
                     ? getInterviewShortlistUploads()
                     : Promise.resolve([]),
@@ -86,6 +95,7 @@ function Interviews() {
             setShortlistUploads(getList(uploadData, 'uploads'));
 
             return true;
+
         } catch (err) {
             console.error(
                 'Interview loading error:',
@@ -99,6 +109,7 @@ function Interviews() {
             );
 
             return false;
+
         } finally {
             setLoading(false);
         }
@@ -197,7 +208,10 @@ function Interviews() {
         setSendingUploadId(uploadId);
 
         try {
-            const response = await sendInterviewNotifications(uploadId, selectedIds);
+            const response = await sendInterviewNotifications(
+                uploadId,
+                selectedIds
+            );
 
             setSuccess(
                 `Notifications processed. Sent: ${response.created_count || 0}. ` +
@@ -212,7 +226,10 @@ function Interviews() {
 
             await loadData();
         } catch (err) {
-            console.error('Send notification error:', err.response?.data || err);
+            console.error(
+                'Send notification error:',
+                err.response?.data || err
+            );
 
             setError(
                 err.response?.data?.error ||
@@ -423,21 +440,27 @@ function Interviews() {
         }
     }
 
+    // Display the correct application label based on the logged-in role.
     function getApplicationLabel(application) {
-        const student = students.find(
-            (item) => String(item.id) === String(application.student)
-        );
-
         const job = jobs.find(
             (item) => String(item.id) === String(application.job)
+        );
+
+        const jobTitle = job?.title || `Job #${application.job}`;
+
+        // Student only needs to see their own application details.
+        if (isStudent) {
+            return `Your Application — ${jobTitle} (Application #${application.id})`;
+        }
+
+        const student = students.find(
+            (item) => String(item.id) === String(application.student)
         );
 
         const studentName =
             student?.Name ||
             student?.name ||
             `Student #${application.student}`;
-
-        const jobTitle = job?.title || `Job #${application.job}`;
 
         return `${studentName} — ${jobTitle} (Application #${application.id})`;
     }
@@ -477,13 +500,19 @@ function Interviews() {
             </div>
 
             {error && (
-                <div className="interviews-alert interviews-alert-error" role="alert">
+                <div
+                    className="interviews-alert interviews-alert-error"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
 
             {success && (
-                <div className="interviews-alert interviews-alert-success" role="status">
+                <div
+                    className="interviews-alert interviews-alert-success"
+                    role="status"
+                >
                     {success}
                 </div>
             )}
@@ -985,9 +1014,7 @@ function Interviews() {
                                                         type="button"
                                                         className="interviews-delete-button"
                                                         onClick={() =>
-                                                            handleDelete(
-                                                                interview.id
-                                                            )
+                                                            handleDelete(interview.id)
                                                         }
                                                     >
                                                         Delete
